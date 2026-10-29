@@ -1,0 +1,241 @@
+.ute-app { min-height: 100%; background: var(--bg); }
+
+/* ============ Sidebar (xanh đậm, giống trang online) ============ */
+.ute-sidebar {
+  position: fixed; inset: var(--brand-h) auto 0 0; z-index: 40;
+  width: var(--sidebar-w);
+  display: flex; flex-direction: column;
+  background: var(--primary); color: #fff;
+  overflow-y: auto;
+}
+.ute-sidebar::-webkit-scrollbar { width: 6px; }
+.ute-sidebar::-webkit-scrollbar-thumb { background: rgba(255,255,255,.25); border-radius: 3px; }
+
+/* Thẻ người dùng */
+.ute-me { display: flex; align-items: center; gap: 10px; padding: 16px 14px; border-bottom: 1px solid rgba(255,255,255,.12); }
+.ute-me__info { min-width: 0; text-align: left; flex: 1; font-size: 13px; line-height: 1.35; }
+.ute-me__info strong { display: block; font-size: 14px; }
+.ute-me__code { color: #fff; opacity: .95; }
+.ute-me__role {
+  display: inline-block; margin-top: 4px; padding: 1px 10px; border-radius: 10px;
+  background: rgba(255,255,255,.16); font-size: 12px; font-weight: 600;
+}
+
+.ute-avatar {
+  flex: none; width: 42px; height: 42px; border-radius: 50%; border: 0; padding: 0;
+  background: #cfe3f3; color: var(--primary-dark); font-weight: 700;
+  display: grid; place-items: center; overflow: hidden;
+}
+.ute-avatar img { width: 100%; height: 100%; object-fit: cover; }
+
+/* Viền phải menu – bấm để thu gọn / mở rộng */
+.ute-sidebar__edge {
+  position: fixed; top: var(--brand-h); bottom: 0; left: calc(var(--sidebar-w) - 5px);
+  width: 10px; z-index: 41; padding: 0; border: 0; background: transparent; cursor: col-resize;
+  transition: left .2s ease;
+}
+.ute-sidebar__edge::after {
+  content: ''; position: absolute; top: 0; bottom: 0; left: 4px; width: 2px;
+  background: transparent; transition: background .15s;
+}
+.ute-sidebar__edge:hover::after, .ute-sidebar__edge:focus-visible::after { background: var(--accent); }
+.ute-sidebar__edge-knob {
+  position: absolute; top: 50%; left: -6px; width: 22px; height: 22px; margin-top: -11px;
+  display: grid; place-items: center; border-radius: 50%;
+  background: #fff; color: var(--primary-dark); box-shadow: 0 1px 4px rgba(0,0,0,.35);
+  opacity: 0; transition: opacity .15s;
+}
+.ute-sidebar__edge:hover .ute-sidebar__edge-knob, .ute-sidebar__edge:focus-visible .ute-sidebar__edge-knob { opacity: 1; }
+
+.ute-nav-wrap { padding: 4px 10px 12px; }
+.ute-sidebar__group {
+  margin: 18px 6px 6px; font-size: 12.5px; font-weight: 700;
+  color: var(--accent); text-transform: uppercase; letter-spacing: .3px;
+}
+.ute-nav {
+  display: flex; align-items: center; gap: 12px; width: 100%;
+  padding: 9px 10px; border: 0; border-radius: 8px;
+  background: transparent; color: #fff; text-align: left;
+}
+.ute-nav:hover { background: rgba(255,255,255,.1); }
+.ute-nav__icon { flex: none; width: 24px; display: grid; place-items: center; opacity: .95; }
+.ute-nav__label { flex: 1; font-size: 14.5px; }
+.ute-nav__badge {
+  min-width: 20px; height: 20px; padding: 0 6px; border-radius: 10px;
+  background: var(--red); color: #fff; font-size: 12px; font-weight: 700;
+  display: grid; place-items: center;
+}
+.ute-nav--active { background: rgba(255,255,255,.14); color: var(--accent); font-weight: 600; box-shadow: inset 3px 0 0 var(--accent); }
+
+.ute-sidebar__footer { margin-top: auto; padding: 14px; font-size: 11.5px; color: rgba(255,255,255,.65); text-align: center; }
+
+/* ============ Topbar (xanh, lệch phải theo sidebar) ============ */
+/* Hàng tên trường: chạy suốt chiều ngang, nằm TRÊN CÙNG (cả menu trái cũng nằm dưới hàng này) */
+.ute-topbar { display: contents; }
+
+/* Hàng 1: logo nhỏ + tên trường */
+.ute-topbar__brand {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 50; height: var(--brand-h);
+  padding: 0 16px; display: flex; align-items: center;
+  background: var(--primary-dark); color: #fff;
+}
+.ute-logo { display: flex; align-items: center; gap: 8px; min-width: 0; color: #fff; }
+.ute-logo__img { height: 26px; width: auto; display: block; flex: none; }
+.ute-logo__fallback {
+  flex: none; width: 26px; height: 26px; border-radius: 50%;
+  display: grid; place-items: center;
+  background: #fff; color: var(--primary-dark); border: 2px solid var(--red);
+  font-weight: 800; font-size: 8px; line-height: 1;
+}
+.ute-school {
+  font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: .5px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+/* Hàng 2: các nút chức năng – chỉ nằm bên phải menu, ngay dưới hàng tên trường */
+.ute-topbar__bar {
+  position: fixed; top: var(--brand-h); left: var(--sidebar-w); right: 0; z-index: 45; height: var(--bar-h);
+  padding: 0 16px; display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  background: var(--primary); color: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.25);
+  transition: left .2s ease;
+}
+.ute-topbar__right { display: flex; align-items: center; gap: 10px; margin-left: auto; }
+
+.ute-iconbtn {
+  position: relative; width: 36px; height: 36px; border-radius: 50%; border: 0;
+  display: grid; place-items: center; background: rgba(255,255,255,.16); color: #fff;
+}
+.ute-iconbtn:hover { background: rgba(255,255,255,.28); }
+.ute-iconbtn__badge {
+  position: absolute; top: -3px; right: -3px;
+  min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px;
+  background: var(--red); color: #fff; font-size: 11px; font-weight: 700;
+  display: grid; place-items: center; border: 2px solid var(--primary);
+}
+
+.ute-dropdown { position: relative; }
+.ute-dropdown__panel {
+  position: absolute; right: 0; top: 48px; width: 300px; padding: 8px;
+  background: var(--surface); color: var(--text); border-radius: var(--radius); box-shadow: var(--shadow-lg);
+}
+.ute-dropdown__me { display: flex; align-items: center; gap: 12px; padding: 10px; border-radius: 8px; box-shadow: var(--shadow); margin-bottom: 6px; }
+.ute-dropdown__me strong { display: block; }
+.ute-dropdown__me span { font-size: 13px; color: var(--text-2); }
+.ute-dropdown__item { width: 100%; display: flex; align-items: center; gap: 12px; padding: 10px; border: 0; border-radius: 8px; background: transparent; text-align: left; }
+.ute-dropdown__item:hover { background: var(--hover); }
+.ute-dropdown__ico { width: 36px; height: 36px; border-radius: 50%; background: var(--bg); display: grid; place-items: center; }
+
+/* ============ Main ============ */
+.ute-main {
+  padding-top: var(--topbar-h);
+  margin-left: var(--sidebar-w);
+  min-width: 0;
+  transition: margin-left 0.2s ease;
+}
+
+.ute-content {
+  display: flex;
+  justify-content: flex-start;
+  align-items: flex-start;
+  gap: 24px;
+  padding: 22px 24px 48px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.ute-feed {
+  flex: 1;
+  width: 100%;
+  max-width: none;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.ute-narrow {
+  width: 100%;
+  max-width: 680px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.ute-right {
+  display: none;
+  position: sticky;
+  top: calc(var(--topbar-h) + 22px);
+  width: 300px;
+  flex: 0 0 300px;
+}
+/* ============ Thành phần dùng chung ============ */
+/* Tiêu đề trang dạng nhãn như trang online */
+.ute-pagehead { display: flex; align-items: flex-end; gap: 16px; border-bottom: 2px solid #d3d7dc; }
+.ute-pagehead h1 {
+  position: relative; margin-bottom: -2px; padding: 8px 18px;
+  background: var(--primary-dark); color: #fff;
+  font-size: 22px; font-weight: 700; text-transform: uppercase; border-radius: 6px 6px 0 0;
+}
+.ute-pagehead h1::after {
+  content: ''; position: absolute; right: -18px; bottom: 0; width: 0; height: 0;
+  border-bottom: 38px solid #c3c8ce; border-right: 18px solid transparent;
+}
+.ute-pagehead p { margin: 0 0 8px 20px; color: var(--text-2); }
+
+.ute-tabs { display: flex; gap: 26px; border-bottom: 1px solid var(--border); }
+.ute-tab {
+  margin-bottom: -1px; padding: 12px 2px; border: 0; background: none;
+  font-size: 14px; font-weight: 600; text-transform: uppercase; color: var(--text-2);
+  border-bottom: 3px solid transparent;
+}
+.ute-tab:hover { color: var(--text); }
+.ute-tab--active { color: var(--text); border-bottom-color: var(--red); }
+
+.ute-card { background: var(--surface); border-radius: var(--radius); box-shadow: var(--shadow); padding: 18px; }
+.ute-card__head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+.ute-card__title { font-size: 17px; font-weight: 700; color: var(--primary-dark); }
+
+.ute-field {
+  display: flex; align-items: center; gap: 10px; height: 46px; padding: 0 14px; max-width: 640px;
+  border: 1px solid var(--border); border-radius: 8px; color: var(--text-2); background: #fff;
+}
+.ute-field:focus-within { border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-soft); }
+.ute-field input { flex: 1; border: 0; outline: 0; font: inherit; color: var(--text); background: transparent; }
+
+.ute-tablewrap { overflow-x: auto; border: 1px solid var(--border); border-radius: 8px; }
+.ute-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+.ute-table th { background: var(--primary-dark); color: #fff; text-align: left; font-weight: 600; padding: 11px 14px; white-space: nowrap; }
+.ute-table td { padding: 12px 14px; border-bottom: 1px solid #eceff2; vertical-align: top; }
+.ute-table tbody tr:hover { background: #f6f9fc; }
+.ute-table tbody tr:last-child td { border-bottom: 0; }
+.ute-table td a { cursor: pointer; }
+
+.ute-btn { height: 36px; padding: 0 16px; border: 0; border-radius: 8px; background: var(--primary); color: #fff; font-weight: 600; }
+.ute-btn:hover { filter: brightness(1.1); }
+.ute-btn--light { background: #e4e6eb; color: var(--text); }
+
+/* Thu gọn menu còn thanh icon */
+.ute-sidebar { transition: width .2s ease; }
+.ute-main { transition: margin-left .2s ease; }
+.ute-app--collapsed { --sidebar-w: 68px; }
+.ute-app--collapsed .ute-nav__label,
+.ute-app--collapsed .ute-me__info,
+.ute-app--collapsed .ute-sidebar__footer { display: none; }
+.ute-app--collapsed .ute-me { justify-content: center; padding: 12px 0; }
+.ute-app--collapsed .ute-sidebar__group { height: 1px; margin: 10px 14px; padding: 0; font-size: 0; background: rgba(255,255,255,.22); }
+.ute-app--collapsed .ute-nav { position: relative; justify-content: center; padding: 10px 0; }
+.ute-app--collapsed .ute-nav__badge { position: absolute; top: 2px; right: 8px; min-width: 16px; height: 16px; padding: 0 4px; font-size: 10px; }
+
+
+
+@media (min-width: 1400px) { .ute-right { display: block; } }
+
+
+@media (max-width: 960px) {
+  .ute-main { margin-left: 68px; }
+  .ute-topbar__bar { left: 68px; }
+  .ute-app:not(.ute-app--collapsed) .ute-sidebar { box-shadow: var(--shadow-lg); }
+  .ute-topbar__brand, .ute-topbar__bar { padding: 0 12px; }
+  .ute-content { padding: 16px 12px 40px; }
+}
+@media (max-width: 760px) { .ute-school { font-size: 11px; letter-spacing: 0; } .ute-pagehead h1 { font-size: 18px; } }
