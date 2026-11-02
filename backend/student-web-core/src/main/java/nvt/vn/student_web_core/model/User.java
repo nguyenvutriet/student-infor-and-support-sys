@@ -45,6 +45,9 @@ public abstract class User {
     private List<Notification> notifications = new ArrayList<>();
 
 
+    protected User() {
+    }
+
     protected User(Role role) {
         this.role = role;
     }
