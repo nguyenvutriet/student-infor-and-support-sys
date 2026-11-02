@@ -17,6 +17,7 @@ public class Document {
     private Integer docId;
 
     private String title;
+    @Column(columnDefinition = "TEXT")
     private String content;
     private LocalDateTime createAt;
     private LocalDateTime updateAt;
@@ -28,9 +29,18 @@ public class Document {
     @JoinColumn(name = "staffId")
     private Staff staff;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "departmentId")
+    private Department department;
+
     @OneToMany(mappedBy = "document", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<FileAttachment> attachments = new ArrayList<>();
 
-
-
+    @OneToMany(
+            mappedBy = "document",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true
+    )
+    private List<DocumentRelation> relatedDocuments = new ArrayList<>();
+    
 }

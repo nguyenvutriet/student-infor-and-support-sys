@@ -35,4 +35,7 @@ public class Department {
     @OneToMany(mappedBy = "receiveFrom")
     private List<ForwardingLog> receivedLogs = new ArrayList<>();
 
+    @OneToMany(mappedBy = "department")
+    private List<Document> documents = new ArrayList<>();
+
 }
