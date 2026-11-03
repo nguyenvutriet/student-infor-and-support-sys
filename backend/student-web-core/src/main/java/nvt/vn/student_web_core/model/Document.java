@@ -15,6 +15,7 @@ public class Document {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer docId;
+    private String docNumber;
 
     private String title;
     @Column(columnDefinition = "TEXT")
@@ -22,6 +23,10 @@ public class Document {
     private LocalDateTime createAt;
     private LocalDateTime updateAt;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, columnDefinition = "VARCHAR(20) DEFAULT 'IN_EFFECT'")
+    private ValidityStatus validity = ValidityStatus.IN_EFFECT;
+    
     @Enumerated(EnumType.STRING)
     private ViewStatus status = ViewStatus.VISIBLE;
 
@@ -42,5 +47,5 @@ public class Document {
             orphanRemoval = true
     )
     private List<DocumentRelation> relatedDocuments = new ArrayList<>();
-    
+
 }

@@ -1,0 +1,74 @@
+/* ============================================================
+   Danh sách tập tin + khung xem trước – dùng chung mọi module
+   (FileList.jsx, FilePreview.jsx). Chỉ dùng biến màu ở index.css.
+   ============================================================ */
+
+.ute-files__empty { margin: 4px 0; font-size: 12.5px; color: var(--text-2); }
+
+/* Dòng tập tin */
+.ute-file {
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    padding: 8px 12px; margin-bottom: 6px;
+    border: 1px solid var(--border); border-radius: 8px; background: var(--surface);
+}
+.ute-file__name { flex: 1 1 200px; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ute-file__size { flex: none; font-size: 12.5px; color: var(--text-2); }
+.ute-file__actions { flex: none; display: flex; gap: 8px; flex-wrap: wrap; }
+
+/* Khung xem trước */
+.ute-preview {
+    margin: -2px 0 12px; padding: 10px;
+    border: 1px solid var(--border); border-radius: 8px; background: #f6f9fc;
+}
+.ute-preview__bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 8px; font-size: 14px; }
+.ute-preview__bar strong { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ute-preview__tools { flex: none; display: flex; align-items: center; gap: 14px; }
+.ute-preview__link, .ute-preview__close {
+    padding: 0; border: 0; background: none; font: inherit; font-weight: 600;
+    color: var(--link); cursor: pointer; text-decoration: none;
+}
+.ute-preview__link:hover, .ute-preview__close:hover { text-decoration: underline; }
+
+.ute-preview__body {
+    --preview-h: 72vh; /* chiều cao mặc định; FilePreview ghi đè qua prop `height` */
+    position: relative; background: #fff; border-radius: 6px; overflow: hidden;
+}
+.ute-preview__frame { display: block; width: 100%; height: var(--preview-h); min-height: 460px; border: 0; }
+.ute-preview__img { display: block; max-width: 100%; max-height: var(--preview-h); margin: 0 auto; object-fit: contain; }
+.ute-preview__loading {
+    position: absolute; inset: 0; display: grid; place-items: center;
+    background: #fff; color: var(--text-2); font-size: 14px; pointer-events: none;
+}
+/* Nút chọn tập tin */
+.doc-pick-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.2s ease;
+}
+
+/* Khi rê chuột */
+.doc-pick-btn:hover {
+    background-color: #e8f0fe;
+    border-color: #3f51a3;
+    color: #3f51a3;
+}
+
+/* Khi nhấn */
+.doc-pick-btn:active {
+    transform: scale(0.97);
+    background-color: #dce6fa;
+}
+
+/* Khi focus bằng bàn phím */
+.doc-pick-btn:focus-visible {
+    outline: 3px solid rgba(63, 81, 163, 0.2);
+    outline-offset: 2px;
+}
+.ute-preview__hint, .ute-preview__empty { margin: 6px 0 0; font-size: 12.5px; color: var(--text-2); }
+
+@media (max-width: 640px) {
+    .ute-preview__frame { min-height: 360px; }
+    .ute-file__actions { width: 100%; }
+}

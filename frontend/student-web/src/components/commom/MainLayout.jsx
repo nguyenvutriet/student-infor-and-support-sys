@@ -44,7 +44,7 @@ export default function MainLayout({
     })
 
   const handleNavigate = (item) => {
-    // Điện thoại: chọn mục xong tự thu gọn để không che nội dung
+    // Điện thoại
     if (window.matchMedia('(max-width: 960px)').matches) setCollapsed(true)
     onNavigate?.(item)
   }

@@ -1,6 +1,5 @@
 package nvt.vn.student_web_core.security.services;
 
-import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import nvt.vn.student_web_core.model.User;
 import nvt.vn.student_web_core.repository.UserRepo;

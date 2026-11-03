@@ -4,7 +4,8 @@ import Login from "./components/auth/Login";
 import { ROLES } from "./utils/roles";
 import { Toaster } from "react-hot-toast";
 import PrivateRoute from "./components/commom/PrivateRoute";
-
+import DocumentManagement from "./components/staff/DocumentManagement";
+import AppLayout from "./components/commom/AppLayout";
 
 
 function App() {
@@ -23,8 +24,16 @@ function App() {
                         <Route path="/admin" element={<div>Giao diện ADMIN Ở ĐÂY NÈ NHA</div>} />
                     </Route>
 
+                    <Route element={<PrivateRoute allowedRoles={[ROLES.ADMIN]} />}>
+                        <Route element={<AppLayout />}>
+                            <Route path="/admin" element={<div>Giao diện ADMIN Ở ĐÂY NÈ NHA</div>} />
+                        </Route>
+                    </Route>
+
                     <Route element={<PrivateRoute allowedRoles={[ROLES.STAFF]} />}>
-                        <Route path="/staff" element={<div>Giao diện STAFF ĐƯA VÀO ĐÂY NHA MẤY NÍ</div>} />
+                        <Route element={<AppLayout />}>
+                            <Route path="/staff/documents" element={<DocumentManagement />} />
+                        </Route>
                     </Route>
 
                     <Route element={<PrivateRoute allowedRoles={[ROLES.STUDENT]} />}>
