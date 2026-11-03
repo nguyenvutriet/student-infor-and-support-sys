@@ -1,4 +1,4 @@
-package nvt.vn.student_web_core.dto.admin;
+package nvt.vn.student_web_core.payload.admin;
 
 public record AdminAccountResponse(
     String userId,

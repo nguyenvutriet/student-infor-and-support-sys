@@ -2,8 +2,8 @@
 package nvt.vn.student_web_core.service;
 
 import lombok.RequiredArgsConstructor;
-import nvt.vn.student_web_core.dto.admin.CommentReportResponse;
-import nvt.vn.student_web_core.dto.admin.ResolveCommentReportRequest;
+import nvt.vn.student_web_core.payload.admin.CommentReportResponse;
+import nvt.vn.student_web_core.payload.admin.ResolveCommentReportRequest;
 import nvt.vn.student_web_core.model.Admin;
 import nvt.vn.student_web_core.model.Comment;
 import nvt.vn.student_web_core.model.Report;

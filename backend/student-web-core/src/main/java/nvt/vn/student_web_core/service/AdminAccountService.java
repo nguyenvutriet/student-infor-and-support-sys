@@ -7,13 +7,15 @@
  */
 package nvt.vn.student_web_core.service;
 
-import nvt.vn.student_web_core.dto.admin.*;
 import nvt.vn.student_web_core.model.User;
 import nvt.vn.student_web_core.model.Student;
 import nvt.vn.student_web_core.model.Staff;
 import nvt.vn.student_web_core.model.Admin;
 import nvt.vn.student_web_core.model.Role;
 import nvt.vn.student_web_core.model.AccountStatus;
+import nvt.vn.student_web_core.payload.admin.AdminAccountCreateRequest;
+import nvt.vn.student_web_core.payload.admin.AdminAccountResponse;
+import nvt.vn.student_web_core.payload.admin.AdminAccountUpdateRequest;
 import nvt.vn.student_web_core.repository.UserRepo;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;

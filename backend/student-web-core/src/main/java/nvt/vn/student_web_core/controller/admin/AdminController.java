@@ -1,6 +1,6 @@
 package nvt.vn.student_web_core.controller.admin;
 
-import nvt.vn.student_web_core.dto.admin.PostReportResponse;
+import nvt.vn.student_web_core.payload.admin.PostReportResponse;
 import nvt.vn.student_web_core.model.Report;
 import nvt.vn.student_web_core.repository.ReportRepo;
 

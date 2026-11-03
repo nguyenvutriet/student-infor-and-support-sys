@@ -3,8 +3,8 @@ package nvt.vn.student_web_core.controller.admin;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import nvt.vn.student_web_core.dto.admin.CommentReportResponse;
-import nvt.vn.student_web_core.dto.admin.ResolveCommentReportRequest;
+import nvt.vn.student_web_core.payload.admin.CommentReportResponse;
+import nvt.vn.student_web_core.payload.admin.ResolveCommentReportRequest;
 import nvt.vn.student_web_core.service.AdminCommentReportService;
 
 import org.springframework.http.ResponseEntity;
