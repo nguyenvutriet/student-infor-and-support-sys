@@ -59,4 +59,40 @@ public interface ReportRepo extends JpaRepository<Report, Integer> {
         AND r.isResolved = true
     """)
     long countResolvedCommentReports();
+
+    @Query("""
+    SELECT r FROM Report r
+    JOIN FETCH r.forumPost p
+    LEFT JOIN FETCH p.author
+    LEFT JOIN FETCH r.student
+    LEFT JOIN FETCH r.handledBy
+    WHERE r.forumPost IS NOT NULL
+    AND r.comment IS NULL
+    ORDER BY r.createAt DESC
+""")
+    List<Report> findAllPostReports();
+
+    @Query("""
+    SELECT COUNT(r) FROM Report r
+    WHERE r.forumPost IS NOT NULL
+    AND r.comment IS NULL
+""")
+    long countPostReports();
+
+    @Query("""
+    SELECT COUNT(r) FROM Report r
+    WHERE r.forumPost IS NOT NULL
+    AND r.comment IS NULL
+    AND r.isResolved = false
+""")
+    long countPendingPostReports();
+
+
+    @Query("""
+    SELECT COUNT(r) FROM Report r
+    WHERE r.forumPost IS NOT NULL
+    AND r.comment IS NULL
+    AND r.isResolved = true
+""")
+    long countResolvedPostReports();
 }
