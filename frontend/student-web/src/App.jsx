@@ -7,6 +7,7 @@ import PrivateRoute from "./components/commom/PrivateRoute";
 import AccountManagement from "./components/admin/AccountManagement";
 import AdminLayout from "./components/admin/AdminLayout";
 import CommentReportManagement from "./components/admin/CommentReportManagement";
+import ReportPostManagement from "./components/admin/ReportPostManagement";
 
 function AdminDashboard() {
     return (
@@ -32,6 +33,14 @@ function AdminCommentReports() {
     );
 }
 
+function AdminPostReports() {
+    return (
+        <AdminLayout activeKey="posts">
+            <ReportPostManagement />
+        </AdminLayout>
+    );
+}
+
 function App() {
     return (
         <>
@@ -52,6 +61,7 @@ function App() {
                         <Route path="/admin" element={<AdminDashboard />} />
                         <Route path="/admin/accounts" element={<AdminAccounts />} />
                         <Route path="/admin/reports" element={<AdminCommentReports />} />
+                        <Route path="/admin/report-posts" element={<AdminPostReports />} />
                     </Route>
 
                     <Route element={<PrivateRoute allowedRoles={[ROLES.STUDENT]} />}>
