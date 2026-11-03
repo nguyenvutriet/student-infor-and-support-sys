@@ -3,7 +3,6 @@ import Card, { DataTable } from '../../commom/Card'
 import ValidityBadge from './ValidityBadge'
 import { listDocuments, STATUS_LABEL, VALIDITY_LABEL, fmtDate } from '../../../api/staffDocumentApi.js'
 
-/** Quản lý văn bản – danh sách văn bản của đơn vị (mới → cũ) */
 export default function DocumentList({ onOpen, onCreate, onEdit }) {
   const [keyword, setKeyword] = useState('')
   const [statusFilter, setStatusFilter] = useState('ALL')

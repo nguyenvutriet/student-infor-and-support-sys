@@ -2,10 +2,11 @@ import { useEffect, useState } from 'react'
 import Card from '../../commom/Card'
 import FileList from '../../commom/FileList'
 import ValidityBadge from './ValidityBadge'
-import { getDocument, setStatus, STATUS_LABEL, RELATION_DISPLAY_LABEL, fmtDate } from '../../../api/staffDocumentApi.js'
+import { getDocument, setStatus, STATUS_LABEL, RELATION_DISPLAY_LABEL, fmtDate }
+    from '../../../api/staffDocumentApi.js'
 import Icon from "../../commom/Icon.jsx";
 
-/** Xem chi tiết văn bản (nhân viên): xem, tải xuống, Cập nhật, Ẩn/Hiện */
+/** Xem chi tiết văn bản (nhân viên) */
 export default function DocumentDetail({ id, onBack, onEdit, onOpen, notify }) {
     const [doc, setDoc] = useState(null)
     const [busy, setBusy] = useState(false)
@@ -16,18 +17,16 @@ export default function DocumentDetail({ id, onBack, onEdit, onOpen, notify }) {
             .then((d) => alive && setDoc(d))
             .catch(() => {
                 if (!alive) return
-                notify('Văn bản không tồn tại', 'error') // văn bản không còn tồn tại → quay lại danh sách
+                notify('Văn bản không tồn tại', 'error')
                 onBack()
             })
         return () => { alive = false }
-    }, [id]) // eslint-disable-line react-hooks/exhaustive-deps
+    }, [id])
 
     if (!doc) return <Card><div className="doc-state">Đang tải...</div></Card>
 
-    // Nhân viên chỉ xem và thao tác văn bản thuộc đơn vị phụ trách của mình (backend đã kiểm tra)
     const canManage = true
     const hidden = doc.status === 'HIDDEN'
-    // văn bản đã bị thay thế bởi văn bản khác → hết hiệu lực
     const replacedBy = doc.relations.find((r) => r.type === 'REPLACED_BY')
 
     const toggle = async () => {
@@ -59,18 +58,26 @@ export default function DocumentDetail({ id, onBack, onEdit, onOpen, notify }) {
                 <div><dt>Ngày đăng</dt><dd>{fmtDate(doc.createAt)}</dd></div>
                 <div><dt>Cập nhật lần cuối</dt><dd>{fmtDate(doc.updateAt)}</dd></div>
                 <div><dt>Đơn vị phụ trách</dt><dd>{doc.department}</dd></div>
-                <div><dt>Tình trạng hiệu lực</dt><dd><ValidityBadge validity={doc.validity} /></dd></div>
-                <div><dt>Trạng thái hiển thị</dt><dd><span className={`doc-badge doc-badge--${doc.status.toLowerCase()}`}>{STATUS_LABEL[doc.status]}</span></dd></div>
+                <div><dt>Tình trạng hiệu lực</dt>
+                    <dd><ValidityBadge validity={doc.validity} /></dd></div>
+                <div><dt>Trạng thái hiển thị</dt>
+                    <dd><span className={`doc-badge doc-badge--${doc.status.toLowerCase()}`}>
+                        {STATUS_LABEL[doc.status]}</span></dd></div>
             </dl>
 
             {replacedBy && doc.validity === 'EXPIRED' && (
                 <div className="doc-note doc-note--danger">
                     Văn bản đã hết hiệu lực vì bị thay thế bởi{' '}
-                    <button type="button" className="doc-link" onClick={() => onOpen(replacedBy.docId)}>{replacedBy.docNumber} – {replacedBy.title}</button>.
+                    <button type="button" className="doc-link" onClick={
+                        () => onOpen(replacedBy.docId)}>{replacedBy.docNumber
+                    } – {replacedBy.title}</button>.
                 </div>
             )}
 
-            {hidden && <div className="doc-note">Văn bản đang ẩn – sinh viên không nhìn thấy văn bản này.</div>}
+            {hidden && (
+                <div className="doc-note">
+                    Văn bản đang ẩn – sinh viên không nhìn thấy văn bản này.</div>
+            )}
 
             <p className="doc-content">{doc.content}</p>
 
@@ -84,8 +91,12 @@ export default function DocumentDetail({ id, onBack, onEdit, onOpen, notify }) {
                     <h3>Văn bản liên quan</h3>
                     {doc.relations.map((r) => (
                         <div className="doc-file" key={`${r.docId}-${r.type}`}>
-                            <span className="doc-badge doc-badge--hidden">{RELATION_DISPLAY_LABEL[r.type] ?? r.type}</span>
-                            <button type="button" className="doc-link doc-file__name" onClick={() => onOpen(r.docId)}>{r.docNumber} – {r.title}</button>
+                            <span className="doc-badge doc-badge--hidden">{
+                                RELATION_DISPLAY_LABEL[r.type] ?? r.type
+                            }</span>
+                            <button type="button" className="doc-link doc-file__name" onClick={
+                                () => onOpen(r.docId)
+                            }>{r.docNumber} – {r.title}</button>
                         </div>
                     ))}
                 </section>
@@ -94,7 +105,9 @@ export default function DocumentDetail({ id, onBack, onEdit, onOpen, notify }) {
             <div className="doc-actions">
                 {canManage && (
                     <>
-                        <button type="button" className="ute-btn" onClick={() => onEdit(doc.id)}>Cập nhật</button>
+                        <button type="button" className="ute-btn" onClick={
+                            () => onEdit(doc.id)
+                        }>Cập nhật</button>
                         <button
                             type="button"
                             className={`ute-btn ute-btn--outline doc-visibility-btn ${

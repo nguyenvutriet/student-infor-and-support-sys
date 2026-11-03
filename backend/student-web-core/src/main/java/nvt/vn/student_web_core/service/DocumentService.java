@@ -226,7 +226,6 @@ public class DocumentService {
             }
             DocumentRelationType type = parseRelation(r.type());
 
-            // Kiểm tra không trùng lặp quan hệ: nếu văn bản đối diện đã có quan hệ trỏ tới văn bản này (chiều ngược đã tồn tại)
             if (d.getDocId() != null) {
                 boolean reverseExists = relationRepo.findByDocumentIdAndRelatedDocumentId(related.getDocId(), d.getDocId()).isPresent();
                 if (reverseExists) {
@@ -240,7 +239,6 @@ public class DocumentService {
             rel.setRelationType(type);
             d.getRelatedDocuments().add(rel);
 
-            // Riêng trường hợp một văn bản được xác định là thay thế cho văn bản khác, hệ thống tự động xác định văn bản bị thay thế là hết hiệu lực (EXPIRED)
             if (type == DocumentRelationType.REPLACES) {
                 related.setValidity(ValidityStatus.EXPIRED);
                 related.setUpdateAt(LocalDateTime.now());
@@ -284,16 +282,13 @@ public class DocumentService {
         return toResponse(d, relationRepo.findIncoming(List.of(d.getDocId())));
     }
 
-    /**
-     * @param incoming quan hệ do văn bản KHÁC khai báo trỏ tới d – không lưu chiều ngược, chỉ truy vấn khi đọc:
-     *                 "X thay thế cho d" ⇒ d "bị thay thế bởi" X. Văn bản bị thay thế → hết hiệu lực.
-     */
+
     private DocumentResponse toResponse(Document d, List<DocumentRelation> incoming) {
         List<DocumentResponse.Attachment> attachments = d.getAttachments().stream()
                 .map(a -> new DocumentResponse.Attachment(a.getFileId(), a.getFileName(),
                         a.getFileSize(), a.getFileUrl(), a.getFileType())).toList();
 
-        // quan hệ d tự khai báo (chiều xuôi, sửa được) + chiều ngược do văn bản khác khai báo (chỉ đọc)
+
         List<DocumentResponse.Relation> relations = new ArrayList<>();
         for (DocumentRelation r : d.getRelatedDocuments()) {
             Document o = r.getRelatedDocument();

@@ -5,11 +5,6 @@ import DocumentDetail from './documents/DocumentDetail'
 import DocumentForm from './documents/DocumentForm'
 import '../../styles/documents.css'
 
-/**
- * Trang QUẢN LÝ VĂN BẢN (module Nhân viên) – gồm 4 chức năng:
- *   Quản lý văn bản (danh sách) → Xem chi tiết → Đăng tải / Cập nhật
- * Đặt trong <MainLayout module="staff" activeKey="documents">.
- */
 export default function DocumentManagement() {
   const [view, setView] = useState({ name: 'list' })
   const [history, setHistory] = useState([])

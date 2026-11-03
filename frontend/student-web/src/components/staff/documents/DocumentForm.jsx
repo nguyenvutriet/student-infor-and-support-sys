@@ -2,11 +2,13 @@ import { useEffect, useRef, useState } from 'react'
 import Card from '../../commom/Card'
 import Icon from '../../commom/Icon'
 import RelatedPicker from './RelatedPicker'
-import { getDocument, createDocument, updateDocument, VALIDITY_LABEL, RELATION_DISPLAY_LABEL, ALLOWED_EXT, MAX_FILE_MB, fmtSize } from '../../../api/staffDocumentApi.js'
+import { getDocument, createDocument, updateDocument,
+    VALIDITY_LABEL, RELATION_DISPLAY_LABEL, ALLOWED_EXT, MAX_FILE_MB, fmtSize
+} from '../../../api/staffDocumentApi.js'
 
-const FILE_ERROR = `Tập tin không đúng định dạng hoặc vượt quá dung lượng cho phép (${ALLOWED_EXT.join(', ').toUpperCase()} – tối đa ${MAX_FILE_MB} MB).`
+const FILE_ERROR = `Tập tin không đúng định dạng hoặc vượt quá dung lượng cho phép (
+${ALLOWED_EXT.join(', ').toUpperCase()} – tối đa ${MAX_FILE_MB} MB).`
 
-/** Đăng tải văn bản (mode="create") và Cập nhật văn bản (mode="edit") dùng chung một form */
 export default function DocumentForm({ mode, id, onDone, onCancel, onBack, onMissing }) {
   const isEdit = mode === 'edit'
   const fileRef = useRef(null)
@@ -17,16 +19,15 @@ export default function DocumentForm({ mode, id, onDone, onCancel, onBack, onMis
   const [title, setTitle] = useState('')
   const [content, setContent] = useState('')
   const [validity, setValidity] = useState('IN_EFFECT')
-  const [kept, setKept] = useState([])          // tập tin cũ còn giữ (khi cập nhật)
-  const [files, setFiles] = useState([])        // tập tin mới chọn
-  const [relations, setRelations] = useState([])   // quan hệ văn bản này tự khai báo (sửa được)
-  const [derived, setDerived] = useState([])         // quan hệ do văn bản khác khai báo (chỉ đọc)
+  const [kept, setKept] = useState([])
+  const [files, setFiles] = useState([])
+  const [relations, setRelations] = useState([])
+  const [derived, setDerived] = useState([])
   const [errors, setErrors] = useState({})
   const [fileError, setFileError] = useState('')
   const [formError, setFormError] = useState('')
   const [saving, setSaving] = useState(false)
 
-  // đã bị văn bản khác thay thế (chiều ngược do văn bản kia khai báo) → khóa ở "Hết hiệu lực"
   const replaced = derived.some((r) => r.type === 'REPLACED_BY')
 
   useEffect(() => {
@@ -38,12 +39,14 @@ export default function DocumentForm({ mode, id, onDone, onCancel, onBack, onMis
           setDocNumber(d.docNumber); setTitle(d.title); setContent(d.content); setKept(d.attachments)
           setValidity(d.selectedValidity || d.validity || 'IN_EFFECT')
           setDerived(d.relations.filter((r) => r.incoming))
-          setRelations(d.relations.filter((r) => !r.incoming).map((r) => ({ docId: r.docId, docNumber: r.docNumber, title: r.title, type: r.type })))
+          setRelations(d.relations.filter((r) => !r.incoming).map((r) => ({
+              docId: r.docId, docNumber: r.docNumber, title: r.title, type: r.type
+          })))
           setLoading(false)
         })
-        .catch(() => alive && onMissing()) // Văn bản không còn tồn tại
+        .catch(() => alive && onMissing())
     return () => { alive = false }
-  }, [id, isEdit]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [id, isEdit])
 
   const pickFiles = (e) => {
     const ok = []
@@ -74,8 +77,12 @@ export default function DocumentForm({ mode, id, onDone, onCancel, onBack, onMis
       const rel = relations.map(({ docId, type }) => ({ docId, type }))
       const finalValidity = replaced ? 'EXPIRED' : validity
       const saved = isEdit
-          ? await updateDocument(id, { docNumber, title, content, validity: finalValidity, keepAttachmentIds: kept.map((a) => a.id), newFiles: files, relations: rel })
-          : await createDocument({ docNumber, title, content, validity: finalValidity, newFiles: files, relations: rel })
+          ? await updateDocument(id, {
+              docNumber, title, content, validity: finalValidity, keepAttachmentIds: kept
+                  .map((a) => a.id), newFiles: files, relations: rel })
+          : await createDocument({
+              docNumber, title, content, validity: finalValidity, newFiles: files, relations: rel
+          })
       onDone(saved.id)
     } catch (err) {
       if (err?.code === 'NOT_FOUND') onMissing()
@@ -83,7 +90,9 @@ export default function DocumentForm({ mode, id, onDone, onCancel, onBack, onMis
         setErrors({ docNumber: 'Số hiệu văn bản đã tồn tại' })
         setFormError('Số hiệu văn bản đã tồn tại')
       }
-      else setFormError(err?.message || (isEdit ? 'Cập nhật văn bản không thành công, vui lòng thử lại' : 'Đăng tải văn bản không thành công, vui lòng thử lại'))
+      else setFormError(err?.message || (isEdit ?
+              'Cập nhật văn bản không thành công, vui lòng thử lại'
+              : 'Đăng tải văn bản không thành công, vui lòng thử lại'))
       setSaving(false)
     }
   }
@@ -103,19 +112,31 @@ export default function DocumentForm({ mode, id, onDone, onCancel, onBack, onMis
 
         <div className="doc-field">
           <label htmlFor="doc-number">Số hiệu <span className="doc-req">*</span></label>
-          <input id="doc-number" className={`doc-input ${errors.docNumber ? 'doc-input--error' : ''}`} style={{ maxWidth: 320 }} value={docNumber} maxLength={50} onChange={(e) => setDocNumber(e.target.value)} placeholder="VD: 125/QĐ-ĐHSPKT" />
+          <input id="doc-number" className={
+              `doc-input ${errors.docNumber ? 'doc-input--error' : ''}`
+          } style={{ maxWidth: 320 }} value={docNumber} maxLength={50}
+                 onChange={(e) => setDocNumber(e.target.value)
+          } placeholder="VD: 125/QĐ-ĐHSPKT" />
           {errors.docNumber && <div className="doc-error">{errors.docNumber}</div>}
         </div>
 
         <div className="doc-field">
           <label htmlFor="doc-title">Tiêu đề <span className="doc-req">*</span></label>
-          <input id="doc-title" className={`doc-input ${errors.title ? 'doc-input--error' : ''}`} value={title} maxLength={255} onChange={(e) => setTitle(e.target.value)} placeholder="Nhập tiêu đề văn bản" />
+          <input id="doc-title" className={
+              `doc-input ${errors.title ? 'doc-input--error' : ''}`
+          } value={title} maxLength={255}
+                 onChange={(e) => setTitle(e.target.value)
+          } placeholder="Nhập tiêu đề văn bản" />
           {errors.title && <div className="doc-error">{errors.title}</div>}
         </div>
 
         <div className="doc-field">
           <label htmlFor="doc-content">Nội dung <span className="doc-req">*</span></label>
-          <textarea id="doc-content" className={`doc-input ${errors.content ? 'doc-input--error' : ''}`} rows={8} value={content} onChange={(e) => setContent(e.target.value)} placeholder="Nhập nội dung / mô tả văn bản" />
+          <textarea id="doc-content" className={
+              `doc-input ${errors.content ? 'doc-input--error' : ''}`
+          } rows={8} value={content} onChange={
+              (e) => setContent(e.target.value)
+          } placeholder="Nhập nội dung / mô tả văn bản" />
           {errors.content && <div className="doc-error">{errors.content}</div>}
         </div>
 

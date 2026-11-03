@@ -2,12 +2,6 @@ import { useEffect, useState } from 'react'
 import Icon from '../../commom/Icon'
 import { listDocuments, RELATION_LABEL, RELATION_EFFECT } from '../../../api/staffDocumentApi.js'
 
-/**
- * Chọn "văn bản liên quan" (không bắt buộc): tìm theo số hiệu hoặc tiêu đề trong văn bản của đơn vị,
- * có thể chọn nhiều văn bản, mỗi văn bản chọn loại quan hệ (thay thế cho / sửa đổi, bổ sung / bổ sung...).
- * Quan hệ là hai chiều; văn bản bị thay thế sẽ tự động hết hiệu lực.
- * value: [{ docId, docNumber, title, type }]
- */
 export default function RelatedPicker({ currentId, excludeIds = [], value, onChange }) {
     const [docs, setDocs] = useState([])
     const [q, setQ] = useState('')

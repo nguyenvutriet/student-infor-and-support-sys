@@ -14,12 +14,32 @@ import java.util.List;
 @RequiredArgsConstructor
 public class StaffController {
     private final DocumentService documentService;
-    @GetMapping public Object list(@RequestParam(required = false) String title) { return documentService.staffList(title); }
-    @GetMapping("/{id}") public Object detail(@PathVariable Integer id) { return documentService.staffDetail(id); }
+    @GetMapping
+    public Object list(@RequestParam(required = false) String title) {
+        return documentService.staffList(title);
+    }
+
+    @GetMapping("/{id}")
+    public Object detail(@PathVariable Integer id) {
+        return documentService.staffDetail(id);
+    }
+
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public Object create(@RequestPart("data") DocumentRequest data, @RequestPart(value = "files", required = false) List<MultipartFile> files) { return documentService.create(data, files); }
+    public Object create(@RequestPart("data") DocumentRequest data,
+                         @RequestPart(value = "files", required = false)
+                         List<MultipartFile> files) {
+        return documentService.create(data, files);
+    }
+
     @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public Object update(@PathVariable Integer id, @RequestPart("data") DocumentRequest data, @RequestPart(value = "files", required = false) List<MultipartFile> files) { return documentService.update(id, data, files); }
+    public Object update(@PathVariable Integer id,
+                         @RequestPart("data") DocumentRequest data,
+                         @RequestPart(value = "files", required = false) List<MultipartFile> files) {
+        return documentService.update(id, data, files);
+    }
+
     @PatchMapping("/{id}/visibility")
-    public Object visibility(@PathVariable Integer id, @RequestParam ViewStatus status) { return documentService.setVisibility(id, status); }
+    public Object visibility(@PathVariable Integer id, @RequestParam ViewStatus status) {
+        return documentService.setVisibility(id, status);
+    }
 }
