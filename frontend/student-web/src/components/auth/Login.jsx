@@ -1,11 +1,13 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { authUser } from "../../store/action/action";
 import toast from "react-hot-toast";
 import logo from "../../assets/HCMUTE.jpg";
 import background from "../../assets/logo_bg.jpg";
 import '../../styles/Login.css';
+import { clearLock, loadLock, saveLock } from "../../utils/loginLock";
+
 
 
 const GoogleIcon = () => (
@@ -17,14 +19,72 @@ const GoogleIcon = () => (
     </svg>
 );
 
+const OAUTH_ERRORS = {
+    account_not_found: "Email Google này chưa được liên kết với tài khoản nào trong hệ thống",
+    account_locked: "Tài khoản của bạn đang bị khóa, vui lòng liên hệ quản trị viên",
+    email_not_verified: "Email Google chưa được xác minh",
+    domain_not_allowed: "Vui lòng đăng nhập bằng email của trường",
+    access_denied: "Bạn đã hủy đăng nhập bằng Google",
+    oauth_failed: "Đăng nhập bằng Google thất bại, vui lòng thử lại",
+};
+
+const normalizeUsername = (u) => (u ?? "").trim().toLowerCase();
+
+const formatCountdown = (totalSeconds) => {
+    const m = String(Math.floor(totalSeconds / 60)).padStart(2, "0");
+    const s = String(totalSeconds % 60).padStart(2, "0");
+    return `${m}:${s}`;
+};
+
 const Login = () => {
 
     const navigate = useNavigate();
     const dispatch = useDispatch();
 
     const [loader, setLoader] = useState(false);
+     const [lock, setLock] = useState(() => loadLock());
+    const [now, setNow] = useState(() => Date.now());
     const [form, setForm] = useState({ username: "", password: "" });
     const [errors, setErrors] = useState({});
+    const [searchParams, setSearchParams] = useSearchParams();
+
+    useEffect(() => {
+        if (!lock) return;
+        const id = setInterval(() => {
+            const t = Date.now();
+            setNow(t);
+            if (t >= lock.until) {
+                clearLock();
+                setLock(null);
+            }
+        }, 500);
+        return () => clearInterval(id);
+    }, [lock]);
+
+    const isSameUser = !!lock && normalizeUsername(form.username) === lock.username;
+    const remaining = isSameUser ? Math.max(0, Math.ceil((lock.until - now) / 1000)) : 0;
+    const isLocked = remaining > 0;
+    const lockMessage = lock?.message ?? "";
+
+    const handleLocked = (retryAfterSeconds, message) => {
+        const t = Date.now();
+        const newLock = {
+            username: normalizeUsername(form.username),
+            rawUsername: form.username.trim(),
+            until: t + retryAfterSeconds * 1000,
+            message,
+        };
+        saveLock(newLock);
+        setNow(t);
+        setLock(newLock);
+    };
+
+    useEffect(() => {
+        const code = searchParams.get("error");
+        if (!code) return;
+        toast.error(OAUTH_ERRORS[code] ?? OAUTH_ERRORS.oauth_failed);
+        setSearchParams({}, { replace: true });
+    }, [searchParams, setSearchParams]);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -42,9 +102,9 @@ const Login = () => {
 
     const handleLogin = (e) => {
         e.preventDefault();
-        if (!validate()) return;
+        if (isLocked || !validate()) return;
         const data = { username: form.username.trim(), password: form.password };
-        dispatch(authUser(data, toast, navigate, setLoader));
+        dispatch(authUser(data, toast, navigate, setLoader, handleLocked));
     };
 
     
@@ -64,6 +124,13 @@ const Login = () => {
             <main className="login-card">
                 <h2 className="login-title">ĐĂNG NHẬP</h2>
                 <p className="login-subtitle">Cổng thông tin hỗ trợ</p>
+
+                {isLocked && (
+                    <div className="login-lock-banner" role="alert">
+                        <strong>{lockMessage}</strong>
+                        <span>Có thể thử lại sau: {formatCountdown(remaining)}</span>
+                    </div>
+                )}
 
                 <form onSubmit={handleLogin} noValidate>
                     <div className={`login-field ${errors.username ? "has-error" : ""}`}>
@@ -104,8 +171,12 @@ const Login = () => {
                         )}
                     </div>
 
-                    <button type="submit" className="login-btn-primary" disabled={loader}>
-                        {loader ? "Đang đăng nhập..." : "Đăng nhập"}
+                    <button type="submit" className="login-btn-primary" disabled={loader || isLocked}>
+                        {loader
+                            ? "Đang đăng nhập..."
+                            : isLocked
+                                ? `Thử lại sau ${formatCountdown(remaining)}`
+                                : "Đăng nhập"}
                     </button>
                 </form>
 

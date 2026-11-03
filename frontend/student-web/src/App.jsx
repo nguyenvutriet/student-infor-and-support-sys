@@ -4,6 +4,7 @@ import Login from "./components/auth/Login";
 import { ROLES } from "./utils/roles";
 import { Toaster } from "react-hot-toast";
 import PrivateRoute from "./components/commom/PrivateRoute";
+import OAuth2Redirect from "./components/auth/OAuth2Redirect";
 
 
 
@@ -14,9 +15,12 @@ function App() {
                 <Routes>
                     <Route path="/" element={<HomeRedirect />} />
 
+                    <Route path="/oauth2/redirect" element={<OAuth2Redirect />} />
+
                     <Route element={<PrivateRoute publicPage />}>
                         <Route path="/login" element={<Login />} />
                         <Route path="/forgot-password" element={<div>Quên mật khẩu</div>} />
+                        
                     </Route>
 
                     <Route element={<PrivateRoute allowedRoles={[ROLES.ADMIN]} />}>

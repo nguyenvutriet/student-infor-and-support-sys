@@ -1,6 +1,8 @@
 package nvt.vn.student_web_core.security;
 
 import lombok.RequiredArgsConstructor;
+import nvt.vn.student_web_core.handler.OAuth2FailureHandler;
+import nvt.vn.student_web_core.handler.OAuth2SuccessHandler;
 import nvt.vn.student_web_core.security.jwt.AuthEntryPointJwt;
 import nvt.vn.student_web_core.security.jwt.AuthTokenFilter;
 import nvt.vn.student_web_core.security.services.UserDetailsServiceImpl;
@@ -16,6 +18,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
@@ -25,6 +28,8 @@ public class WebSecurityConfig {
 
     private final UserDetailsServiceImpl userDetailsService;
     private final AuthEntryPointJwt unauthorizedHandler;
+    private final OAuth2SuccessHandler oAuth2SuccessHandler;
+    private final OAuth2FailureHandler oAuth2FailureHandler;
 
     @Bean
     public AuthTokenFilter authenticationJwtTokenFilter() {
@@ -70,8 +75,16 @@ public class WebSecurityConfig {
                         .requestMatchers("/v3/api-docs/**").permitAll()
                         .requestMatchers("/h2-console/**").permitAll()
                         .requestMatchers("/actuator/**").permitAll()
+                        .requestMatchers("/oauth2/**").permitAll()
+                        .requestMatchers("/login/oauth2/**").permitAll()
+
+                        .requestMatchers("/api/student/**").hasRole("STUDENT")
+                        .requestMatchers("/api/staff/**").hasRole("STAFF")
+                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated())
                 .authenticationProvider(authenticationProvider())
+                .oauth2Login(oauth -> oauth.successHandler(oAuth2SuccessHandler)
+                        .failureHandler(oAuth2FailureHandler))
                 .addFilterBefore(authenticationJwtTokenFilter(), UsernamePasswordAuthenticationFilter.class)
                 .headers(headers -> headers.frameOptions(
                         frameOptions -> frameOptions.sameOrigin()

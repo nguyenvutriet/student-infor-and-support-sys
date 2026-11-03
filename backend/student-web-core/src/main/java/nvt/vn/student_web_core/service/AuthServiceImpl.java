@@ -1,6 +1,7 @@
 package nvt.vn.student_web_core.service;
 
 import lombok.RequiredArgsConstructor;
+import nvt.vn.student_web_core.handler.TooManyLoginAttemptsException;
 import nvt.vn.student_web_core.payload.AuthResult;
 import nvt.vn.student_web_core.repository.UserRepo;
 import nvt.vn.student_web_core.security.jwt.JwtUtils;
@@ -11,6 +12,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseCookie;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -27,6 +29,7 @@ public class AuthServiceImpl implements AuthService{
     private final UserRepo userRepo;
     private final PasswordEncoder passwordEncoder;
     private final ModelMapper modelMapper;
+    private final LoginAttemptService loginAttemptService;
 
     @Value("${app.auth.expose-jwt}")
     private boolean exposeJwt;
@@ -34,10 +37,28 @@ public class AuthServiceImpl implements AuthService{
     @Override
     public AuthResult login(LoginRequest loginRequest) {
 
-        Authentication auth = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword())
-        );
-        SecurityContextHolder .getContext().setAuthentication(auth);
+        String key = loginRequest.getUsername().trim().toLowerCase();
+
+        if (loginAttemptService.isBlocked(key)) {
+            throw new TooManyLoginAttemptsException(loginAttemptService.getSecondsLeft(key));
+        }
+
+        Authentication auth;
+        try{
+            auth = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword())
+            );
+        } catch(BadCredentialsException e){
+            loginAttemptService.loginFailed(key);
+            if (loginAttemptService.isBlocked(key)) {
+                throw new TooManyLoginAttemptsException(loginAttemptService.getSecondsLeft(key));
+            }
+            throw e;
+        }
+
+        loginAttemptService.loginSucceeded(key);
+
+        SecurityContextHolder.getContext().setAuthentication(auth);
         UserDetailsImpl userDetails = (UserDetailsImpl) auth.getPrincipal();
 
         ResponseCookie jwtCookie = jwtUtils.generateJwtCookie(userDetails);
@@ -62,7 +83,11 @@ public class AuthServiceImpl implements AuthService{
 
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
 
-        String role = userDetails.getAuthorities().toString();
+        String role = userDetails.getAuthorities().stream()
+                                .map(GrantedAuthority::getAuthority)
+                                .findFirst()
+                                .orElse("");
+
         UserInfoResponse response = new UserInfoResponse(
                 userDetails.getUsername(),
                 userDetails.getFullName(),
