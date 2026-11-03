@@ -45,6 +45,6 @@ export const MENUS = {
     { key: 'forums', label: 'Diễn đàn', icon: 'forum', path: '/admin/posts' },
     { group: 'Hệ thống' },
     { key: 'announcements', label: 'Thông báo hệ thống', icon: 'megaphone', path: '/admin/announcements' },
-    { key: 'stats', label: 'Thống kê', icon: 'chart', path: '/admin/stats' },
+    { key: 'statistics', label: 'Thống kê', icon: 'chart', path: '/admin/statistics' },
   ],
 }

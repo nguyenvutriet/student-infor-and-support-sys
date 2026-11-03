@@ -9,6 +9,7 @@ import AdminLayout from "./components/admin/AdminLayout";
 import CommentReportManagement from "./components/admin/CommentReportManagement";
 import ReportPostManagement from "./components/admin/ReportPostManagement";
 import AccountManagement from "./components/admin/AccountManagement";
+import StatisticsDashboard from "./components/admin/StatisticsDashboard";
 
 function AdminDashboard() {
     return (
@@ -42,6 +43,14 @@ function AdminPostReports() {
     );
 }
 
+function AdminStatistics() {
+    return (
+        <AdminLayout activeKey="statistics">
+            <StatisticsDashboard />
+        </AdminLayout>
+    );
+}
+
 function App() {
     return (
         <>
@@ -66,6 +75,7 @@ function App() {
                         <Route path="/admin/accounts" element={<AdminAccounts />} />
                         <Route path="/admin/reports" element={<AdminCommentReports />} />
                         <Route path="/admin/report-posts" element={<AdminPostReports />} />
+                        <Route path="/admin/statistics" element={<AdminStatistics />} />
                     </Route>
 
                     <Route element={<PrivateRoute allowedRoles={[ROLES.STUDENT]} />}>

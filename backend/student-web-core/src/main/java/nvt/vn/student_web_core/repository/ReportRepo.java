@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+import java.time.LocalDateTime;
 
 import java.util.List;
 import java.util.Optional;
@@ -95,4 +96,67 @@ public interface ReportRepo extends JpaRepository<Report, Integer> {
     AND r.isResolved = true
 """)
     long countResolvedPostReports();
+
+    @Query("""
+    SELECT COUNT(r)
+    FROM Report r
+    WHERE r.forumPost IS NOT NULL
+    AND r.comment IS NULL
+    AND r.createAt BETWEEN :from AND :to
+""")
+    long countPostReportsBetween(
+            @Param("from") LocalDateTime from,
+            @Param("to") LocalDateTime to
+    );
+
+    @Query("""
+    SELECT COUNT(r)
+    FROM Report r
+    WHERE r.comment IS NOT NULL
+    AND r.createAt BETWEEN :from AND :to
+""")
+    long countCommentReportsBetween(
+            @Param("from") LocalDateTime from,
+            @Param("to") LocalDateTime to
+    );
+
+    @Query("""
+    SELECT COUNT(r)
+    FROM Report r
+    WHERE r.isResolved = true
+    AND r.createAt BETWEEN :from AND :to
+""")
+    long countResolvedBetween(
+            @Param("from") LocalDateTime from,
+            @Param("to") LocalDateTime to
+    );
+
+    @Query("""
+    SELECT COUNT(r)
+    FROM Report r
+    WHERE r.isResolved = false
+    AND r.createAt BETWEEN :from AND :to
+""")
+    long countPendingBetween(
+            @Param("from") LocalDateTime from,
+            @Param("to") LocalDateTime to
+    );
+
+    long countByIsResolvedTrue();
+
+    long countByIsResolvedFalse();
+
+    @Query("""
+    SELECT COUNT(r)
+    FROM Report r
+    WHERE r.isResolved = true
+""")
+    long countResolved();
+
+    @Query("""
+    SELECT COUNT(r)
+    FROM Report r
+    WHERE r.isResolved = false
+""")
+    long countPending();
 }
