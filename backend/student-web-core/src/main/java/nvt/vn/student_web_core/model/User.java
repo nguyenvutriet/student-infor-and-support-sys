@@ -49,4 +49,7 @@ public abstract class User {
         this.role = role;
     }
 
+    protected User() {
+    }
+
 }
