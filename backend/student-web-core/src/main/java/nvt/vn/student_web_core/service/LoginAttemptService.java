@@ -19,16 +19,6 @@ public class LoginAttemptService {
 
     private final ConcurrentHashMap<String, Attempt> attempts = new ConcurrentHashMap<>();
 
-//    public void checkNotLocked(String username) {
-//        long secondsLeft = getSecondsLeft(username);
-//        if (secondsLeft > 0) {
-//            throw new TooManyLoginAttemptsException(secondsLeft);
-//        }
-//
-//        attempts.computeIfPresent(key(username), (k, a) ->
-//                a.lockedUntil() != null ? null : a);
-//    }
-
     public void loginFailed(String username) {
         attempts.compute(key(username), (k, old) -> {
             int count = (old == null ? 0 : old.count()) + 1;
