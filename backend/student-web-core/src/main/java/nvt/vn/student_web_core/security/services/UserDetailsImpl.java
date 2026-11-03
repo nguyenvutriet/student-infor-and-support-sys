@@ -7,6 +7,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
+import nvt.vn.student_web_core.model.AccountStatus;
 
 import java.util.Collection;
 import java.util.List;
@@ -19,15 +20,17 @@ public class UserDetailsImpl implements UserDetails {
 
     @JsonIgnore
     private String password;
+    private boolean active;
 
     private Collection<? extends GrantedAuthority> authorities;
 
-    public UserDetailsImpl(String userId, String fullName, String email, String password, Collection<? extends GrantedAuthority> authorities) {
+    public UserDetailsImpl(String userId, String fullName, String email, String password, Collection<? extends GrantedAuthority> authorities, boolean active) {
         this.userId = userId;
         this.fullName = fullName;
         this.email = email;
         this.password = password;
         this.authorities = authorities;
+        this.active = active;
     }
 
     public static UserDetailsImpl build(User user) {
@@ -42,7 +45,8 @@ public class UserDetailsImpl implements UserDetails {
                 user.getFullName(),
                 user.getEmail(),
                 user.getPassword(),
-                authorities);
+                authorities,
+                user.getStatus() == AccountStatus.ACTIVE);
     }
 
     @Override
@@ -65,19 +69,29 @@ public class UserDetailsImpl implements UserDetails {
         return UserDetails.super.isAccountNonExpired();
     }
 
-    @Override
-    public boolean isAccountNonLocked() {
-        return UserDetails.super.isAccountNonLocked();
-    }
+    //@Override
+    //public boolean isAccountNonLocked() {
+    //    return UserDetails.super.isAccountNonLocked();
+    //}
 
     @Override
     public boolean isCredentialsNonExpired() {
         return UserDetails.super.isCredentialsNonExpired();
     }
 
+    //@Override
+    //public boolean isEnabled() {
+    //    return UserDetails.super.isEnabled();
+    //}
+
+    @Override
+    public boolean isAccountNonLocked() {
+        return active;
+    }
+
     @Override
     public boolean isEnabled() {
-        return UserDetails.super.isEnabled();
+        return active;
     }
 
     public String getFullName() {

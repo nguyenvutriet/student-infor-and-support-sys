@@ -6,7 +6,7 @@ import { getDocument, setStatus, STATUS_LABEL, RELATION_DISPLAY_LABEL, fmtDate }
 import Icon from "../../commom/Icon.jsx";
 
 /** Xem chi tiết văn bản (nhân viên): xem, tải xuống, Cập nhật, Ẩn/Hiện */
-export default function DocumentDetail({ id, department, onBack, onEdit, onOpen, notify }) {
+export default function DocumentDetail({ id, onBack, onEdit, onOpen, notify }) {
     const [doc, setDoc] = useState(null)
     const [busy, setBusy] = useState(false)
 

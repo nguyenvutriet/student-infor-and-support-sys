@@ -39,6 +39,19 @@ public class AuthTokenFilter extends OncePerRequestFilter {
             if(jwt != null && jwtUtils.validateJwtToken(jwt)){
                 String username = jwtUtils.getUserNameFromJwtToken(jwt);
                 UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+
+                if (!userDetails.isEnabled() || !userDetails.isAccountNonLocked()) {
+
+                    SecurityContextHolder.clearContext();
+
+                    response.sendError(
+                            HttpServletResponse.SC_UNAUTHORIZED,
+                            "Tài khoản đã bị khóa hoặc vô hiệu hóa"
+                    );
+
+                    return;
+                }
+
                 UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
                         userDetails,
                         null,
@@ -46,6 +59,9 @@ public class AuthTokenFilter extends OncePerRequestFilter {
                 );
                 authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(authentication);
+                logger.info("Authenticated username: {}", username);
+                logger.info("Authorities: {}", userDetails.getAuthorities());
+                logger.info("Request URI: {}", request.getRequestURI());
                 logger.debug("Role from JWT: {}", userDetails.getAuthorities());
             }
         } catch (Exception e) {

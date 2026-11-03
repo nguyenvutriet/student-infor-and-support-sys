@@ -1,0 +1,33 @@
+.post-report-page {
+    width: 100%;
+}
+
+.post-report-title {
+    font-weight: 600;
+    color: var(--ute-text, #1e293b);
+    max-width: 260px;
+    overflow-wrap: anywhere;
+}
+
+.post-report-id {
+    margin-top: 4px;
+    font-size: 12px;
+    color: var(--ute-muted, #64748b);
+}
+
+.post-report-reason {
+    max-width: 220px;
+    white-space: normal;
+    overflow-wrap: anywhere;
+}
+
+.post-report-page .cr-detail-content {
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    line-height: 1.6;
+}
+
+.post-report-page .cr-modal {
+    max-height: 90vh;
+    overflow-y: auto;
+}

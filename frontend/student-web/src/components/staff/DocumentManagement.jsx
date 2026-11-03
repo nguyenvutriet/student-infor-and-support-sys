@@ -3,16 +3,14 @@ import { PageHead } from '../commom/Card'
 import DocumentList from './documents/DocumentList'
 import DocumentDetail from './documents/DocumentDetail'
 import DocumentForm from './documents/DocumentForm'
-import { DEFAULT_DEPT } from '../../api/staffDocumentApi.js'
 import '../../styles/documents.css'
 
 /**
  * Trang QUẢN LÝ VĂN BẢN (module Nhân viên) – gồm 4 chức năng:
  *   Quản lý văn bản (danh sách) → Xem chi tiết → Đăng tải / Cập nhật
  * Đặt trong <MainLayout module="staff" activeKey="documents">.
- * `department` = đơn vị của nhân viên đăng nhập (lấy từ store).
  */
-export default function DocumentManagement({ department = DEFAULT_DEPT }) {
+export default function DocumentManagement() {
   const [view, setView] = useState({ name: 'list' })
   const [history, setHistory] = useState([])
   const [toast, setToast] = useState(null)
@@ -66,7 +64,6 @@ export default function DocumentManagement({ department = DEFAULT_DEPT }) {
         <DocumentDetail
             key={view.id}
             id={view.id}
-            department={department}
             notify={notify}
             onBack={handleBack}
             onOpen={toDetail}

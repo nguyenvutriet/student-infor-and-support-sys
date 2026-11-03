@@ -1,0 +1,493 @@
+.st-dashboard {
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+    padding-bottom: 30px;
+}
+
+.st-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+    border-bottom: 1px solid #cbd5e1;
+    padding-bottom: 15px;
+}
+
+.st-heading h2 {
+    color: #07558b;
+    font-size: 25px;
+    font-weight: 800;
+    margin: 0 0 8px;
+}
+
+.st-heading p {
+    color: #64748b;
+    margin: 0;
+}
+
+.st-refresh {
+    border: 1px solid #07558b;
+    background: white;
+    color: #07558b;
+    padding: 10px 16px;
+    border-radius: 7px;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.st-section-title {
+    color: #07558b;
+    font-weight: 800;
+    font-size: 16px;
+    padding-left: 10px;
+    border-left: 4px solid #f59e0b;
+}
+
+.st-grid {
+    display: grid;
+    gap: 18px;
+}
+
+.st-grid-4 {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.st-grid-3 {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.st-grid-2 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.st-card {
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-left: 5px solid;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, .05);
+}
+
+.st-card.blue {
+    border-left-color: #1673b8;
+}
+
+.st-card.orange {
+    border-left-color: #d69a28;
+}
+
+.st-card.green {
+    border-left-color: #15965b;
+}
+
+.st-card.red {
+    border-left-color: #dc5252;
+}
+
+.st-card-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: #64748b;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.st-icon {
+    font-size: 22px;
+}
+
+.st-card h2 {
+    color: #07558b;
+    font-size: 29px;
+    margin: 14px 0 5px;
+}
+
+.st-card p {
+    color: #64748b;
+    font-size: 13px;
+    margin: 0;
+}
+
+.st-chart-card {
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 22px;
+    min-width: 0;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, .05);
+}
+
+.st-chart-card h3,
+.st-export-card h3 {
+    color: #07558b;
+    font-size: 17px;
+    margin: 0 0 20px;
+}
+
+.st-chart-content {
+    height: 330px;
+    position: relative;
+}
+
+.st-report-summary {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.st-report-summary div {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 13px;
+    background: #f8fafc;
+    border-radius: 7px;
+}
+
+.st-report-summary span {
+    color: #475569;
+}
+
+.st-report-summary strong {
+    font-size: 18px;
+    color: #07558b;
+}
+
+.st-report-summary strong.success {
+    color: #15965b;
+}
+
+.st-report-summary strong.danger {
+    color: #dc5252;
+}
+
+.st-export-card {
+    background: white;
+    padding: 22px;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, .05);
+}
+
+.st-export-form {
+    display: flex;
+    align-items: end;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+.st-export-form div {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.st-export-form label {
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.st-export-form input {
+    padding: 12px;
+    border: 1px solid #cbd5e1;
+    border-radius: 7px;
+}
+
+.st-export-form button,
+.st-error button {
+    padding: 12px 18px;
+    background: #075b99;
+    color: white;
+    border: none;
+    border-radius: 7px;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.st-export-form button:disabled {
+    opacity: .6;
+    cursor: not-allowed;
+}
+
+.st-export-card > p {
+    color: #64748b;
+    font-size: 13px;
+    margin: 18px 0 0;
+}
+
+.st-loading,
+.st-error {
+    background: white;
+    padding: 35px;
+    border-radius: 10px;
+    text-align: center;
+}
+
+.st-error {
+    color: #dc2626;
+}
+
+@media (max-width: 1100px) {
+    .st-grid-4 {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+/* =================================
+   RESPONSIVE
+================================= */
+
+@media (max-width: 1100px) {
+    .st-grid-4 {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 768px) {
+    .st-grid-2,
+    .st-grid-3,
+    .st-grid-4 {
+        grid-template-columns: 1fr;
+    }
+
+    .st-heading {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .st-chart-content {
+        height: 280px;
+    }
+}
+
+/* =================================
+   STATISTICS: PERIOD FILTER
+================================= */
+
+.st-dashboard .st-period-filter {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.st-dashboard .st-period-options {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+}
+
+.st-dashboard .st-period-options button {
+    min-height: 38px;
+    padding: 8px 17px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    background: #f8fafc;
+    color: #475569;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.st-dashboard .st-period-options button:hover {
+    background: #eff6ff;
+    border-color: #93c5fd;
+    color: #075b96;
+}
+
+.st-dashboard .st-period-options button.active {
+    background: #075b96;
+    border-color: #075b96;
+    color: #fff;
+    box-shadow: 0 2px 5px rgba(7, 91, 150, 0.18);
+}
+
+.st-dashboard .st-custom-period {
+    display: flex;
+    align-items: end;
+    flex-wrap: wrap;
+    gap: 14px;
+    padding-top: 18px;
+    border-top: 1px solid #edf0f4;
+}
+
+.st-dashboard .st-date-field {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    min-width: 190px;
+}
+
+.st-dashboard .st-date-field label {
+    color: #475569;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.st-dashboard .st-date-field input {
+    box-sizing: border-box;
+    width: 100%;
+    height: 42px;
+    padding: 0 12px;
+    border: 1px solid #dce3eb;
+    border-radius: 8px;
+    background: #fff;
+    color: #344054;
+    font-family: inherit;
+    font-size: 13px;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.st-dashboard .st-date-field input:focus {
+    border-color: #1475b8;
+    box-shadow: 0 0 0 3px rgba(20, 117, 184, 0.10);
+}
+
+.st-dashboard .st-apply-btn {
+    height: 42px;
+    padding: 0 22px;
+    border: none;
+    border-radius: 8px;
+    background: #075b96;
+    color: #fff;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.2s;
+}
+
+.st-dashboard .st-apply-btn:hover {
+    background: #064675;
+    transform: translateY(-1px);
+}
+
+.st-dashboard .st-apply-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.st-dashboard .st-period-description {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 13px;
+    border-radius: 8px;
+    background: #f1f7fc;
+    color: #35617f;
+    font-size: 12px;
+}
+
+.st-dashboard .st-period-description::before {
+    content: "";
+    width: 7px;
+    height: 7px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    background: #16865c;
+}
+
+/* PDF export range */
+.st-dashboard .st-export-range {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    color: #64748b;
+    font-size: 13px;
+}
+
+.st-dashboard .st-export-range strong {
+    color: #174a75;
+    font-size: 14px;
+}
+
+/* Filter responsive */
+@media (max-width: 768px) {
+    .st-dashboard .st-custom-period {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .st-dashboard .st-date-field {
+        width: 100%;
+    }
+
+    .st-dashboard .st-apply-btn {
+        width: 100%;
+    }
+
+    .st-date-input {
+    width: 100%;
+    height: 45px;
+    padding: 0 12px;
+    border: 1px solid #d9e2ec;
+    border-radius: 9px;
+    font-size: 14px;
+    color: #334155;
+    outline: none;
+    background: #fff;
+}
+
+.st-date-input:focus {
+    border-color: #075b99;
+    box-shadow: 0 0 0 3px rgba(7, 91, 153, 0.1);
+}
+
+.react-datepicker-wrapper {
+    width: 100%;
+}
+
+/* Bộ lọc thời gian và nút xuất PDF */
+.st-filter-export-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.st-filter-card {
+    min-width: 0;
+}
+
+.st-export-btn {
+    align-self: center;
+    min-height: 48px;
+    padding: 0 24px;
+    border: none;
+    border-radius: 9px;
+    background: #075b99;
+    color: #fff;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background 0.2s ease;
+}
+
+.st-export-btn:hover:not(:disabled) {
+    background: #064675;
+}
+
+.st-export-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+@media (max-width: 768px) {
+    .st-filter-export-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .st-export-btn {
+        width: 100%;
+    }
+}
+}
