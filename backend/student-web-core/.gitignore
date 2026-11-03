@@ -34,7 +34,3 @@ build/
 
 application.properties
 .env
-
-.env
-.env.*
-!.env.example

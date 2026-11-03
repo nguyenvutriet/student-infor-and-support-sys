@@ -4,10 +4,11 @@ import Login from "./components/auth/Login";
 import { ROLES } from "./utils/roles";
 import { Toaster } from "react-hot-toast";
 import PrivateRoute from "./components/commom/PrivateRoute";
-import AccountManagement from "./components/admin/AccountManagement";
+import OAuth2Redirect from "./components/auth/OAuth2Redirect";
 import AdminLayout from "./components/admin/AdminLayout";
 import CommentReportManagement from "./components/admin/CommentReportManagement";
 import ReportPostManagement from "./components/admin/ReportPostManagement";
+import AccountManagement from "./components/admin/AccountManagement";
 
 function AdminDashboard() {
     return (
@@ -48,14 +49,17 @@ function App() {
                 <Routes>
                     <Route path="/" element={<HomeRedirect />} />
 
+                    <Route path="/oauth2/redirect" element={<OAuth2Redirect />} />
+
                     <Route element={<PrivateRoute publicPage />}>
                         <Route path="/login" element={<Login />} />
                         <Route path="/forgot-password" element={<div>Quên mật khẩu</div>} />
+                        
                     </Route>
 
                     <Route element={<PrivateRoute allowedRoles={[ROLES.STAFF]} />}>
                         <Route path="/staff" element={<div>Giao diện STAFF Ở ĐÂY NÈ NHA</div>} />
-                    </Route>
+                    </Route> 
 
                     <Route element={<PrivateRoute allowedRoles={[ROLES.ADMIN]} />}>
                         <Route path="/admin" element={<AdminDashboard />} />

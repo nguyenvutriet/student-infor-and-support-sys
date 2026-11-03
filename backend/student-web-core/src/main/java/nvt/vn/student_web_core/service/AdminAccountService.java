@@ -1,10 +1,3 @@
-/*
- * Service mẫu theo entity hiện có của dự án:
- * User (abstract) + Student/Staff/Admin, Role và AccountStatus.
- *
- * LƯU Ý: kiểm tra package entity/enum/repository thực tế rồi chỉnh các import
- * bên dưới cho đúng. Service chỉ tạo User subtype khi role tương ứng.
- */
 package nvt.vn.student_web_core.service;
 
 import nvt.vn.student_web_core.model.User;

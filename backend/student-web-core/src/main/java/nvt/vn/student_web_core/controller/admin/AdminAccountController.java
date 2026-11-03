@@ -1,13 +1,4 @@
-/*
- * PATCH BACKEND: đặt file tại controller/admin/AdminAccountController.java
- * Package/import entity cần khớp với package thực tế của dự án.
- * API contract mới do module này đề xuất:
- * GET    /api/admin/accounts
- * GET    /api/admin/accounts/{userId}
- * POST   /api/admin/accounts
- * PUT    /api/admin/accounts/{userId}
- * PATCH  /api/admin/accounts/{userId}/status
- */
+
 package nvt.vn.student_web_core.controller.admin;
 
 import jakarta.validation.Valid;

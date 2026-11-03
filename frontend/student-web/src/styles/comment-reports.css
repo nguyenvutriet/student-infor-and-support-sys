@@ -1,9 +1,4 @@
 
-/* =========================================
-   COMMENT REPORT MANAGEMENT
-   UTE DESIGN SYSTEM
-========================================= */
-
 .comment-report-page {
     display: flex;
     flex-direction: column;
@@ -16,10 +11,6 @@
 .comment-report-page .ute-pagehead {
     margin-bottom: 2px;
 }
-
-/* =========================================
-   STATISTICS
-========================================= */
 
 .cr-stats {
     display: grid;
@@ -106,9 +97,6 @@
     font-size: 12px;
 }
 
-/* =========================================
-   CARD HEADER
-========================================= */
 
 .comment-report-page .ute-card__head {
     gap: 12px;
