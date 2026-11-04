@@ -11,11 +11,10 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
-/** API quản lý góc học tập cho nhân viên (STAFF). */
 @RestController
 @RequestMapping("/api/staff/study-resources")
 @RequiredArgsConstructor
-public class StaffStudyResourceController {
+public class StudyResourceController {
     private final StudyResourceService studyResourceService;
 
     @GetMapping

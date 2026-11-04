@@ -2,7 +2,6 @@ import { useEffect, useMemo, useState } from 'react'
 import Card, { DataTable } from '../../commom/Card'
 import { listStudyResources, STATUS_LABEL, TYPE_LABEL, fmtDate } from '../../../api/staffStudyApi.js'
 
-/** Danh sách tài liệu / đề thi góc học tập do nhân viên đăng (mới → cũ), có tìm kiếm và lọc */
 export default function StudyList({ onOpen, onCreate, onEdit }) {
   const [keyword, setKeyword] = useState('')
   const [typeFilter, setTypeFilter] = useState('ALL')

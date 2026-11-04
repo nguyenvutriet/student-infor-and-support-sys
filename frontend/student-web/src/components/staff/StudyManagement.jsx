@@ -6,11 +6,6 @@ import StudyForm from './study/StudyForm'
 import '../../styles/documents.css'
 import '../../styles/study.css'
 
-/**
- * Trang QUẢN LÝ GÓC HỌC TẬP (module Nhân viên):
- *   Danh sách → Xem chi tiết → Đăng tải / Cập nhật (+ Ẩn/Hiện, Xóa)
- * Đặt trong <AppLayout> (route /staff/study).
- */
 export default function StudyManagement() {
   const [view, setView] = useState({ name: 'list' })
   const [toast, setToast] = useState(null)

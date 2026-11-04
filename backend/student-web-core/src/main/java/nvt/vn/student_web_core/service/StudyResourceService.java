@@ -13,7 +13,6 @@ import org.springframework.web.multipart.MultipartFile;
 import java.time.LocalDateTime;
 import java.util.*;
 
-/** Quản lý góc học tập (nhân viên): đăng tải, cập nhật, ẩn/hiện, xóa tài liệu & đề thi. */
 @Service
 @RequiredArgsConstructor
 public class StudyResourceService {
@@ -105,7 +104,6 @@ public class StudyResourceService {
         return staff;
     }
 
-    /** Chỉ nhân viên đã đăng tài liệu mới được xem chi tiết / sửa / ẩn-hiện / xóa. */
     private StudyResource owned(Integer id) {
         Staff staff = currentStaff();
         StudyResource r = resourceRepo.findById(id)
@@ -140,7 +138,6 @@ public class StudyResourceService {
         }
     }
 
-    /** Mỗi tài liệu cần ít nhất 1 tập tin và không quá MAX_FILES. */
     private void checkFileCount(int total) {
         if (total < 1) throw new IllegalArgumentException("Vui lòng chọn ít nhất một tập tin");
         if (total > MAX_FILES) throw new IllegalArgumentException("Mỗi tài liệu tối đa " + MAX_FILES + " tập tin");

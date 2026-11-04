@@ -1,7 +1,6 @@
 import api from './api.js'
 import { STATUS_LABEL, ALLOWED_EXT, MAX_FILE_MB, fmtDate } from './staffDocumentApi.js'
 
-// dùng lại các hằng/tiện ích chung với module văn bản
 export { STATUS_LABEL, ALLOWED_EXT, MAX_FILE_MB, fmtDate }
 export { fmtSize } from '../utils/file.js'
 

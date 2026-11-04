@@ -107,7 +107,6 @@ public class DocumentService {
             d.setTitle(req.title().trim());
             d.setContent(req.content().trim());
 
-            // Nếu văn bản đang bị văn bản khác thay thế, luôn khóa ở EXPIRED
             boolean isReplaced = relationRepo.findIncoming(List.of(d.getDocId())).stream()
                     .anyMatch(r -> r.getRelationType() == DocumentRelationType.REPLACES);
             if (isReplaced) {
@@ -288,7 +287,6 @@ public class DocumentService {
                 .map(a -> new DocumentResponse.Attachment(a.getFileId(), a.getFileName(),
                         a.getFileSize(), a.getFileUrl(), a.getFileType())).toList();
 
-
         List<DocumentResponse.Relation> relations = new ArrayList<>();
         for (DocumentRelation r : d.getRelatedDocuments()) {
             Document o = r.getRelatedDocument();
@@ -305,7 +303,6 @@ public class DocumentService {
             }
         }
 
-        // bị văn bản khác thay thế (X "thay thế cho" d) → hết hiệu lực
         boolean replaced = incoming.stream()
                 .anyMatch(r -> r.getRelationType() == DocumentRelationType.REPLACES);
         ValidityStatus selected = d.getValidity() == null ? ValidityStatus.IN_EFFECT : d.getValidity();

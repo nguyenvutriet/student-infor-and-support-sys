@@ -8,7 +8,6 @@ import {
 
 const FILE_ERROR = `Tập tin không đúng định dạng hoặc vượt quá dung lượng cho phép (${ALLOWED_EXT.join(', ').toUpperCase()} – tối đa ${MAX_FILE_MB} MB).`
 
-/** Đăng tải tài liệu (mode="create") và Cập nhật tài liệu (mode="edit") dùng chung một form */
 export default function StudyForm({ mode, id, onDone, onCancel, onMissing }) {
     const isEdit = mode === 'edit'
     const fileRef = useRef(null)

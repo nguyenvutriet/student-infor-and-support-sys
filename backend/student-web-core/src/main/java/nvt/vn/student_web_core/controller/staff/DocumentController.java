@@ -12,7 +12,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/staff/documents")
 @RequiredArgsConstructor
-public class StaffController {
+public class DocumentController {
     private final DocumentService documentService;
     @GetMapping
     public Object list(@RequestParam(required = false) String title) {

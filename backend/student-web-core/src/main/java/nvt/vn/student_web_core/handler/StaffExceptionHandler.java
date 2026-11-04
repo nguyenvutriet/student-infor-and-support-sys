@@ -9,10 +9,6 @@ import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import java.util.Map;
 import java.util.NoSuchElementException;
 
-/**
- * Trả lỗi dạng { "message": "..." } kèm mã HTTP đúng cho các controller của nhân viên
- * (văn bản + góc học tập), để giao diện hiển thị được thông báo tiếng Việt từ backend.
- */
 @RestControllerAdvice(basePackages = "nvt.vn.student_web_core.controller.staff")
 public class StaffExceptionHandler {
 
