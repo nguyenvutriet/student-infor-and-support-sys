@@ -2,6 +2,7 @@ package nvt.vn.student_web_core.repository;
 
 import nvt.vn.student_web_core.model.ForumPost;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;
 import nvt.vn.student_web_core.model.ViewStatus;
 import org.springframework.data.jpa.repository.Query;
@@ -10,7 +11,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Repository
-public interface ForumPostRepo extends JpaRepository<ForumPost, Integer> {
+public interface ForumPostRepo extends JpaRepository<ForumPost, Integer>, JpaSpecificationExecutor<ForumPost> {
 
     @Query("""
         SELECT COUNT(p)
