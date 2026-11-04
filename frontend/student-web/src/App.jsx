@@ -12,7 +12,7 @@ import AccountManagement from "./components/admin/AccountManagement";
 import StatisticsDashboard from "./components/admin/StatisticsDashboard";
 import DocumentManagement from "./components/staff/DocumentManagement";
 import AppLayout from "./components/commom/AppLayout";
-
+import StudyManagement from "./components/staff/StudyManagement.jsx";
 function AdminDashboard() {
     return (
         <AdminLayout activeKey="dashboard">
@@ -71,6 +71,7 @@ function App() {
                     <Route element={<PrivateRoute allowedRoles={[ROLES.STAFF]} />}>
                         <Route element={<AppLayout />}>
                             <Route path="/staff/documents" element={<DocumentManagement />} />
+                            <Route path="/staff/study" element={<StudyManagement />} />
                         </Route>
                     </Route>
 
