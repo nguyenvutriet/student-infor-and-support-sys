@@ -1,0 +1,143 @@
+]633;E;{ echo "========== BACKEND CONTROLLER =========="\x3b find backend/student-web-core/src/main/java/nvt/vn/student_web_core/controller/admin -type f\x3b  echo "========== BACKEND PAYLOAD =========="\x3b find backend/student-web-core/src/main/java/nvt/vn/student_web_core/payload/admin -type f\x3b  echo "========== FRONTEND API =========="\x3b find frontend/student-web/src/api -type f\x3b  echo "========== FRONTEND ADMIN COMPONENTS =========="\x3b find frontend/student-web/src/components/admin -type f\x3b  echo "========== APP JSX =========="\x3b find frontend/student-web/src -name "App.jsx" -exec cat {} \\\x3b\x3b } > report_cleanup_structure.txt;65f2d03b-d523-4148-8f78-553d16c68aef]633;C========== BACKEND CONTROLLER ==========
+backend/student-web-core/src/main/java/nvt/vn/student_web_core/controller/admin/AdminAccountController.java
+backend/student-web-core/src/main/java/nvt/vn/student_web_core/controller/admin/AdminCommentReportController.java
+backend/student-web-core/src/main/java/nvt/vn/student_web_core/controller/admin/AdminController.java
+backend/student-web-core/src/main/java/nvt/vn/student_web_core/controller/admin/AdminStatisticsController.java
+========== BACKEND PAYLOAD ==========
+backend/student-web-core/src/main/java/nvt/vn/student_web_core/payload/admin/AdminAccountCreateRequest.java
+backend/student-web-core/src/main/java/nvt/vn/student_web_core/payload/admin/AdminAccountResponse.java
+backend/student-web-core/src/main/java/nvt/vn/student_web_core/payload/admin/AdminAccountUpdateRequest.java
+backend/student-web-core/src/main/java/nvt/vn/student_web_core/payload/admin/ChangeAccountStatusRequest.java
+backend/student-web-core/src/main/java/nvt/vn/student_web_core/payload/admin/CommentReportResponse.java
+backend/student-web-core/src/main/java/nvt/vn/student_web_core/payload/admin/PostReportResponse.java
+backend/student-web-core/src/main/java/nvt/vn/student_web_core/payload/admin/ResolveCommentReportRequest.java
+backend/student-web-core/src/main/java/nvt/vn/student_web_core/payload/admin/StatisticsDashboardDTO.java
+========== FRONTEND API ==========
+frontend/student-web/src/api/adminAccountApi.js
+frontend/student-web/src/api/adminCommentReportApi.js
+frontend/student-web/src/api/api.js
+frontend/student-web/src/api/staffDocumentApi.js
+frontend/student-web/src/api/staffStudyApi.js
+========== FRONTEND ADMIN COMPONENTS ==========
+frontend/student-web/src/components/admin/AccountManagement.jsx
+frontend/student-web/src/components/admin/AdminLayout.jsx
+frontend/student-web/src/components/admin/CommentReportManagement.jsx
+frontend/student-web/src/components/admin/Dashboard.jsx
+frontend/student-web/src/components/admin/ReportPostManagement.jsx
+frontend/student-web/src/components/admin/StatisticsCharts.jsx
+frontend/student-web/src/components/admin/StatisticsDashboard.jsx
+========== APP JSX ==========
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import HomeRedirect from "./components/commom/HomeRedirect";
+import Login from "./components/auth/Login";
+import { ROLES } from "./utils/roles";
+import { Toaster } from "react-hot-toast";
+import PrivateRoute from "./components/commom/PrivateRoute";
+import OAuth2Redirect from "./components/auth/OAuth2Redirect";
+import AdminLayout from "./components/admin/AdminLayout";
+import ReportPostManagement from "./components/admin/ReportPostManagement";
+import AccountManagement from "./components/admin/AccountManagement";
+import StatisticsDashboard from "./components/admin/StatisticsDashboard";
+import DocumentManagement from "./components/staff/DocumentManagement";
+import AppLayout from "./components/commom/AppLayout";
+import StudyManagement from "./components/staff/StudyManagement.jsx";
+import ForumPage from "./components/commom/forum/ForumPage.jsx";
+import { useSelector } from "react-redux";
+function AdminDashboard() {
+    return (
+        <AdminLayout activeKey="dashboard">
+            <h1>Giao diện ADMIN</h1>
+        </AdminLayout>
+    );
+}
+
+function AdminAccounts() {
+    return (
+        <AdminLayout activeKey="accounts">
+            <AccountManagement />
+        </AdminLayout>
+    );
+}
+
+function AdminReports() {
+    return (
+        <AdminLayout activeKey="reports">
+            <ReportPostManagement />
+        </AdminLayout>
+    );
+}
+
+function AdminStatistics() {
+    return (
+        <AdminLayout activeKey="statistics">
+            <StatisticsDashboard />
+        </AdminLayout>
+    );
+}
+
+function AdminForum() {
+    const { user } = useSelector((state) => state.auth);
+    return (
+        <AdminLayout
+            activeKey="forums"
+            user={{ name: user?.fullName, code: user?.userId, avatar: user?.avatar }}
+        >
+            <ForumPage />
+        </AdminLayout>
+    );
+}
+
+function App() {
+    return (
+        <>
+            <Router>
+                <Routes>
+                    <Route path="/" element={<HomeRedirect />} />
+
+                    <Route path="/oauth2/redirect" element={<OAuth2Redirect />} />
+
+                    <Route element={<PrivateRoute publicPage />}>
+                        <Route path="/login" element={<Login />} />
+                        <Route path="/forgot-password" element={<div>Quên mật khẩu</div>} />
+                        <Route path="/reset-password" element={<div>Đặt lại mật khẩu</div>} />
+                        <Route path="/forum" element={<ForumPage />} />
+                    </Route>
+
+                    <Route element={<PrivateRoute allowedRoles={[ROLES.STAFF]} />}>
+                        <Route element={<AppLayout />}>
+                            <Route path="/staff/documents" element={<DocumentManagement />} />
+                            <Route path="/staff/study" element={<StudyManagement />} />
+                            <Route path="/staff/forum" element={<ForumPage />} />
+                        </Route>
+                    </Route>
+
+                    <Route element={<PrivateRoute allowedRoles={[ROLES.ADMIN]} />}>
+                        <Route path="/admin" element={<AdminDashboard />} />
+                        <Route path="/admin/accounts" element={<AdminAccounts />} />
+                        {/* Trang quản lý báo cáo tổng hợp */}
+                        <Route path="/admin/reports" element={<AdminReports />} />
+
+                        {/* Chuyển đường dẫn cũ sang trang tổng hợp */}
+                        <Route
+                            path="/admin/report-posts"
+                            element={<Navigate to="/admin/reports" replace />}
+                        />
+                        <Route path="/admin/statistics" element={<AdminStatistics />} />
+                        <Route path="/admin/posts" element={<AdminForum />} />
+                    </Route>
+
+                    <Route element={<PrivateRoute allowedRoles={[ROLES.STUDENT]} />}>
+                        <Route path="/student" element={<div>Giao diện STUDENT Ở ĐÂY NÈ MẤY NÍ ƠI</div>} />
+                        <Route path="/student/forum" element={<ForumPage />} />
+                    </Route>
+
+                    <Route path="*" element={<HomeRedirect />} />
+                </Routes>
+            </Router>
+
+            <Toaster position="bottom-center" />
+        </>
+    );
+}
+
+export default App;

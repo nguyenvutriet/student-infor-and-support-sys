@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import HomeRedirect from "./components/commom/HomeRedirect";
 import Login from "./components/auth/Login";
 import { ROLES } from "./utils/roles";
@@ -6,8 +6,7 @@ import { Toaster } from "react-hot-toast";
 import PrivateRoute from "./components/commom/PrivateRoute";
 import OAuth2Redirect from "./components/auth/OAuth2Redirect";
 import AdminLayout from "./components/admin/AdminLayout";
-import CommentReportManagement from "./components/admin/CommentReportManagement";
-import ReportPostManagement from "./components/admin/ReportPostManagement";
+import ReportManagement from "./components/admin/ReportManagement.jsx";
 import AccountManagement from "./components/admin/AccountManagement";
 import StatisticsDashboard from "./components/admin/StatisticsDashboard";
 import DocumentManagement from "./components/staff/DocumentManagement";
@@ -31,18 +30,10 @@ function AdminAccounts() {
     );
 }
 
-function AdminCommentReports() {
+function AdminReports() {
     return (
         <AdminLayout activeKey="reports">
-            <CommentReportManagement />
-        </AdminLayout>
-    );
-}
-
-function AdminPostReports() {
-    return (
-        <AdminLayout activeKey="posts">
-            <ReportPostManagement />
+            <ReportManagement />
         </AdminLayout>
     );
 }
@@ -94,8 +85,7 @@ function App() {
                     <Route element={<PrivateRoute allowedRoles={[ROLES.ADMIN]} />}>
                         <Route path="/admin" element={<AdminDashboard />} />
                         <Route path="/admin/accounts" element={<AdminAccounts />} />
-                        <Route path="/admin/reports" element={<AdminCommentReports />} />
-                        <Route path="/admin/report-posts" element={<AdminPostReports />} />
+                        <Route path="/admin/reports" element={<AdminReports />} />
                         <Route path="/admin/statistics" element={<AdminStatistics />} />
                         <Route path="/admin/posts" element={<AdminForum />} />
                     </Route>
