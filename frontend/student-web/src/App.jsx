@@ -13,6 +13,7 @@ import StatisticsDashboard from "./components/admin/StatisticsDashboard";
 import DocumentManagement from "./components/staff/DocumentManagement";
 import AppLayout from "./components/commom/AppLayout";
 import StudyManagement from "./components/staff/StudyManagement.jsx";
+import ChatPage from "./components/chat/ChatPage";
 function AdminDashboard() {
     return (
         <AdminLayout activeKey="dashboard">
@@ -72,6 +73,8 @@ function App() {
                         <Route element={<AppLayout />}>
                             <Route path="/staff/documents" element={<DocumentManagement />} />
                             <Route path="/staff/study" element={<StudyManagement />} />
+                            <Route path="/staff/requests" element={<ChatPage key="requests" initialTab="REQUESTS" />} />
+                            <Route path="/staff/messages" element={<ChatPage key="messages" initialTab="MESSAGES" />} />
                         </Route>
                     </Route>
 
@@ -85,6 +88,8 @@ function App() {
 
                     <Route element={<PrivateRoute allowedRoles={[ROLES.STUDENT]} />}>
                         <Route path="/student" element={<div>Giao diện STUDENT Ở ĐÂY NÈ MẤY NÍ ƠI</div>} />
+                        <Route path="/student/requests" element={<ChatPage key="requests" />} />
+                        <Route path="/student/messages" element={<ChatPage key="messages" />} />
                     </Route>
 
                     <Route path="*" element={<HomeRedirect />} />

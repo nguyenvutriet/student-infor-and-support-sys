@@ -11,10 +11,14 @@ import java.time.LocalDateTime;
 public class RequestStatusHistory {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer historyId;
 
     private String note;
     private LocalDateTime createAt;
+    private String action;
+    private String actorName;
+    private String departmentName;
 
     @Enumerated(EnumType.STRING)
     private RequestStatus status;
