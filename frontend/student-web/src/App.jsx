@@ -13,6 +13,8 @@ import StatisticsDashboard from "./components/admin/StatisticsDashboard";
 import DocumentManagement from "./components/staff/DocumentManagement";
 import AppLayout from "./components/commom/AppLayout";
 import StudyManagement from "./components/staff/StudyManagement.jsx";
+import ForumPage from "./components/commom/forum/ForumPage.jsx";
+import { useSelector } from "react-redux";
 function AdminDashboard() {
     return (
         <AdminLayout activeKey="dashboard">
@@ -53,6 +55,18 @@ function AdminStatistics() {
     );
 }
 
+function AdminForum() {
+    const { user } = useSelector((state) => state.auth);
+    return (
+        <AdminLayout
+            activeKey="forums"
+            user={{ name: user?.fullName, code: user?.userId, avatar: user?.avatar }}
+        >
+            <ForumPage />
+        </AdminLayout>
+    );
+}
+
 function App() {
     return (
         <>
@@ -65,13 +79,15 @@ function App() {
                     <Route element={<PrivateRoute publicPage />}>
                         <Route path="/login" element={<Login />} />
                         <Route path="/forgot-password" element={<div>Quên mật khẩu</div>} />
-
+                        <Route path="/reset-password" element={<div>Đặt lại mật khẩu</div>} />
+                        <Route path="/forum" element={<ForumPage />} />
                     </Route>
 
                     <Route element={<PrivateRoute allowedRoles={[ROLES.STAFF]} />}>
                         <Route element={<AppLayout />}>
                             <Route path="/staff/documents" element={<DocumentManagement />} />
                             <Route path="/staff/study" element={<StudyManagement />} />
+                            <Route path="/staff/forum" element={<ForumPage />} />
                         </Route>
                     </Route>
 
@@ -81,10 +97,12 @@ function App() {
                         <Route path="/admin/reports" element={<AdminCommentReports />} />
                         <Route path="/admin/report-posts" element={<AdminPostReports />} />
                         <Route path="/admin/statistics" element={<AdminStatistics />} />
+                        <Route path="/admin/posts" element={<AdminForum />} />
                     </Route>
 
                     <Route element={<PrivateRoute allowedRoles={[ROLES.STUDENT]} />}>
                         <Route path="/student" element={<div>Giao diện STUDENT Ở ĐÂY NÈ MẤY NÍ ƠI</div>} />
+                        <Route path="/student/forum" element={<ForumPage />} />
                     </Route>
 
                     <Route path="*" element={<HomeRedirect />} />

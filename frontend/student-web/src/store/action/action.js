@@ -1,10 +1,11 @@
 import api from "../../api/api";
 import { getUserRole, ROLE_HOME } from "../../utils/roles";
 import { clearUser, saveUser } from "../../utils/authStorage";
-import { AUTH_MESSAGES } from "../../utils/authMessages";
 
 
-
+const FORUM_PAGE_SIZE = 10;
+const isNotFound = (error) => error?.response?.status === 404;
+const apiMessage = (error, fallback) => error?.response?.data?.message || fallback;
 
 export const authUser = (sendData, toast, navigate, setLoader, onLocked) => async (dispatch) => {
 
@@ -95,3 +96,139 @@ export const loadOAuthUser = (toast, navigate) => async (dispatch) => {
         navigate("/login", { replace: true });
     }
 }
+
+export const fetchForumPosts = (keyword = "", page = 0) => async (dispatch) => {
+    dispatch({ type: "FORUM_FEED_REQUEST", payload: { keyword, page } });
+    try {
+        const { data } = await api.get("/forum/posts", { params: { keyword, page, size: FORUM_PAGE_SIZE } });
+        dispatch({ type: "FORUM_FEED_SUCCESS", payload: { ...data, keyword, page } });
+    } catch (error) {
+        console.error("Forum feed error:", error);
+        dispatch({ type: "FORUM_FEED_FAILURE", payload: { keyword, message: "Không thể tải bài viết" } });
+    }
+};
+
+export const fetchSavedForumPosts = (page = 0) => async (dispatch) => {
+    dispatch({ type: "FORUM_SAVED_REQUEST", payload: { page } });
+    try {
+        const { data } = await api.get("/forum/saved", { params: { page, size: FORUM_PAGE_SIZE } });
+        dispatch({ type: "FORUM_SAVED_SUCCESS", payload: { ...data, page } });
+    } catch (error) {
+        console.error("Forum saved error:", error);
+        dispatch({ type: "FORUM_SAVED_FAILURE", payload: { message: "Không thể tải danh sách bài viết đã lưu" } });
+    }
+};
+
+export const createForumPost = ({ title, content, files = [] }, toast) => async (dispatch, getState) => {
+    try {
+        const form = new FormData();
+        form.append("title", title);
+        form.append("content", content);
+        files.forEach((f) => form.append("files", f));
+        const { data } = await api.post("/forum/posts", form);
+        if (!getState().forum.feed.keyword) dispatch({ type: "FORUM_POST_PREPEND", payload: data });
+        toast.success("Đăng bài thành công");
+        return { ok: true };
+    } catch (error) {
+        return { ok: false, message: apiMessage(error, "Đăng bài không thành công, vui lòng thử lại") };
+    }
+};
+
+export const openForumDetail = (post) => ({ type: "FORUM_DETAIL_SET", payload: post });
+export const closeForumDetail = () => ({ type: "FORUM_DETAIL_CLEAR" });
+export const removeForumPost = (postId) => ({ type: "FORUM_POST_REMOVE", payload: postId });
+
+export const fetchForumPostDetail = (postId, toast) => async (dispatch) => {
+    try {
+        const { data } = await api.get(`/forum/posts/${postId}`);
+        dispatch({ type: "FORUM_POST_PATCH", payload: { postId, patch: data } });
+        return { ok: true };
+    } catch (error) {
+        if (isNotFound(error)) {
+            toast.error("Bài viết không tồn tại hoặc đã bị xóa");
+            dispatch(removeForumPost(postId));
+            return { ok: false, missing: true };
+        }
+        return { ok: false, message: apiMessage(error, "Không thể tải bài viết") };
+    }
+};
+
+export const reactForumPost = (post, type, toast) => async (dispatch) => {
+    const prev = { myReaction: post.myReaction, reactionSummary: post.reactionSummary, reactionCount: post.reactionCount };
+    dispatch({ type: "FORUM_POST_REACT", payload: { postId: post.postId, type } });
+    try {
+        if (type) await api.put(`/forum/posts/${post.postId}/reaction`, { type });
+        else await api.delete(`/forum/posts/${post.postId}/reaction`);
+    } catch (error) {
+        dispatch({ type: "FORUM_POST_PATCH", payload: { postId: post.postId, patch: prev } });
+        if (isNotFound(error)) {
+            toast.error("Bài viết không tồn tại hoặc đã bị xóa");
+            dispatch(removeForumPost(post.postId));
+        } else {
+            toast.error(apiMessage(error, "Không thể cập nhật cảm xúc"));
+        }
+    }
+};
+
+export const toggleSaveForumPost = (post, toast) => async (dispatch) => {
+    const willSave = !post.saved;
+    dispatch({ type: "FORUM_POST_PATCH", payload: { postId: post.postId, patch: { saved: willSave } } });
+    try {
+        if (willSave) await api.post(`/forum/posts/${post.postId}/save`);
+        else await api.delete(`/forum/posts/${post.postId}/save`);
+        toast.success(willSave ? "Đã lưu bài viết" : "Đã bỏ lưu bài viết");
+    } catch (error) {
+        dispatch({ type: "FORUM_POST_PATCH", payload: { postId: post.postId, patch: { saved: !willSave } } });
+        if (!willSave) dispatch(fetchSavedForumPosts(0)); 
+        if (isNotFound(error)) {
+            toast.error("Bài viết không tồn tại hoặc đã bị xóa");
+            dispatch(removeForumPost(post.postId));
+        } else {
+            toast.error(apiMessage(error, "Không thể lưu bài viết"));
+        }
+    }
+};
+
+export const fetchForumComments = (postId, toast) => async (dispatch) => {
+    dispatch({ type: "FORUM_COMMENTS_REQUEST", payload: postId });
+    try {
+        const { data } = await api.get(`/forum/posts/${postId}/comments`);
+        dispatch({ type: "FORUM_COMMENTS_SUCCESS", payload: { postId, items: data } });
+    } catch (error) {
+        if (isNotFound(error)) {
+            toast.error("Bài viết không tồn tại hoặc đã bị xóa");
+            dispatch(removeForumPost(postId));
+            return;
+        }
+        dispatch({ type: "FORUM_COMMENTS_FAILURE", payload: { postId, message: "Không thể tải bình luận." } });
+    }
+};
+
+export const addForumComment = (postId, { content, parentId = null }, toast) => async (dispatch) => {
+    try {
+        const { data } = await api.post(`/forum/posts/${postId}/comments`, { content, parentId });
+        dispatch({ type: "FORUM_COMMENT_ADD", payload: { postId, comment: data } });
+        return { ok: true };
+    } catch (error) {
+        if (isNotFound(error)) {
+            toast.error("Bài viết không tồn tại hoặc đã bị xóa");
+            dispatch(removeForumPost(postId));
+            return { ok: false, missing: true };
+        }
+        toast.error(apiMessage(error, "Không thể gửi bình luận"));
+        return { ok: false };
+    }
+};
+
+export const reportForumContent = (payload, toast) => async () => {
+    try {
+        await api.post("/forum/reports", payload);
+        toast.success("Gửi báo cáo thành công");
+        return { ok: true };
+    } catch (error) {
+        return { ok: false, message: apiMessage(error, "Không thể gửi báo cáo, vui lòng thử lại") };
+    }
+};
+
+
+
