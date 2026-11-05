@@ -20,5 +20,6 @@ public class PostDTO {
     private VoteType myReaction;
     private Long commentCount;
     private boolean saved;
-    private LocalDateTime createdAt;
+    private List<CommentDTO> comments;
+    private LocalDateTime createAt;
 }

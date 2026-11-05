@@ -6,7 +6,7 @@ export const ROLES = {
 
 export const ROLE_HOME = {
     [ROLES.ADMIN]: "/admin",
-    [ROLES.STAFF]: "/staff/documents",
+    [ROLES.STAFF]: "/staff/forum",
     [ROLES.STUDENT]: "/student",
 };
 
