@@ -14,6 +14,8 @@ public class PostDTO {
     private String content;
     private ViewStatus status;
     private String authorId;
+    private String authorName;
+    private String authorRole;
     private List<AttachmentDTO> attachments;
     private Long reactionCount;
     private List<VoteDTO> reactionSummary;
@@ -22,4 +24,5 @@ public class PostDTO {
     private boolean saved;
     private List<CommentDTO> comments;
     private LocalDateTime createAt;
+    private LocalDateTime savedAt;
 }

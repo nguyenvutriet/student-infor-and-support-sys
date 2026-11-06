@@ -13,6 +13,7 @@ import { getUserRole } from '../../../utils/roles'
 import { fetchForumPosts, fetchSavedForumPosts, toggleSaveForumPost } from '../../../store/action/action'
 import '../../../styles/forum.css'
 
+// Cuộn vô hạn: trả về callback-ref gắn vào phần tử "mốc" cuối danh sách; khi mốc lọt vào màn hình → onReach()
 function useSentinel(onReach, active) {
   const [node, setNode] = useState(null)
   useEffect(() => {
@@ -24,6 +25,18 @@ function useSentinel(onReach, active) {
   return setNode
 }
 
+/**
+ * TRANG DIỄN ĐÀN DÙNG CHUNG CHO 3 ROLE (student / staff / admin).
+ * Chỉ cần đặt <ForumPage /> vào trong layout của role – không cần props.
+ * Dữ liệu & gọi API: Redux (state.forum, thunk trong store/action/action.js).
+ *
+ *  • UC6  Tham gia diễn đàn  : bảng tin + tìm kiếm theo tiêu đề
+ *  • UC7  Đăng bài           : popup "Tạo bài viết"
+ *  • UC8  Xem bài viết       : popup chi tiết (cảm xúc, bình luận, lưu, báo cáo)
+ *  • UC9  Kho lưu trữ        : mục "Bài viết đã lưu" ở cột trái (chỉ student / staff)
+ *  Cột trái bảng tin: "Trang chủ" (về bảng tin, thoát tìm kiếm) + "Bài viết đã lưu"
+ *  • UC10 Báo cáo vi phạm    : nút trong popup chi tiết (chỉ student / staff)
+ */
 export default function ForumPage() {
   const dispatch = useDispatch()
   const { user } = useSelector((s) => s.auth)
@@ -33,13 +46,14 @@ export default function ForumPage() {
   const canSave = !isAdmin
   const canReport = !isAdmin
 
-  const [view, setView] = useState('feed') 
+  const [view, setView] = useState('feed') // 'feed' | 'saved'
   const [searchInput, setSearchInput] = useState('')
   const [keyword, setKeyword] = useState('')
   const [focused, setFocused] = useState(false)
   const [composer, setComposer] = useState(false)
-  const [detail, setDetail] = useState(null) 
+  const [detail, setDetail] = useState(null) // { post, focusComment }
 
+  // Vào bảng tin / đổi từ khóa → tải lại từ trang đầu; vào Kho lưu trữ → tải danh sách đã lưu
   useEffect(() => {
     if (view === 'feed') dispatch(fetchForumPosts(keyword, 0))
     else dispatch(fetchSavedForumPosts(0))
@@ -55,15 +69,23 @@ export default function ForumPage() {
 
   const submitSearch = (e) => {
     e.preventDefault()
-    setKeyword(searchInput.trim()) 
+    setKeyword(searchInput.trim()) // UC6 – 2.1
   }
-  const backFromSearch = () => {
+  const backFromSearch = () => { // UC6 – 2.2
     setSearchInput('')
     setKeyword('')
     setFocused(false)
   }
 
+  // "Trang chủ" ở cột trái: thoát tìm kiếm, về đầu bảng tin và tải lại
+  const goHome = () => {
+    const wasSearching = keyword !== ''
+    backFromSearch()
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+    if (!wasSearching) dispatch(fetchForumPosts('', 0)) // đang tìm kiếm thì đổi keyword đã tự tải lại
+  }
 
+  // Đăng bài khi đang tìm kiếm → thoát tìm kiếm để bài mới hiện ở đầu bảng tin
   const afterPosted = () => { if (keyword) backFromSearch() }
 
   const searching = keyword !== ''
@@ -86,8 +108,22 @@ export default function ForumPage() {
           onUnsave={(p) => dispatch(toggleSaveForumPost(p, toast))}
         />
       ) : (
-        <>
-          <div className="fm-toolbar">
+        <div className="fm-feed">
+          {/* Cột trái: điều hướng nhanh */}
+          <nav className="fm-rail fm-card" aria-label="Điều hướng diễn đàn">
+            <button type="button" className={`fm-saved__item ${!searching ? 'fm-saved__item--on' : ''}`} onClick={goHome}>
+              <span className="fm-saved__ico"><Icon name="home" size={20} /></span>
+              Trang chủ
+            </button>
+            {canSave && (
+              <button type="button" className="fm-saved__item" onClick={() => setView('saved')}>
+                <span className="fm-saved__ico fm-saved__ico--gray"><Icon name="bookmark" size={20} filled /></span>
+                Bài viết đã lưu
+              </button>
+            )}
+          </nav>
+
+          <div className="fm-col">
             <form className="fm-search" onSubmit={submitSearch}>
               {searching || focused ? (
                 <button type="button" className="fm-search__back" onMouseDown={(e) => e.preventDefault()} onClick={backFromSearch} aria-label="Quay lại">
@@ -105,14 +141,6 @@ export default function ForumPage() {
               />
             </form>
 
-            {canSave && (
-              <button type="button" className="fm-saved-link" onClick={() => setView('saved')}>
-                <Icon name="bookmark" size={18} filled /> Bài viết đã lưu
-              </button>
-            )}
-          </div>
-
-          <div className="fm-col">
             {!searching && (
               <div className="fm-card fm-compose">
                 <ForumAvatar name={user?.fullName} src={user?.avatar} size={42} />
@@ -155,7 +183,7 @@ export default function ForumPage() {
 
             {feed.hasMore && !feed.error && <div ref={feedSentinel} style={{ height: 1 }} />}
           </div>
-        </>
+        </div>
       )}
 
       {composer && <PostComposerModal user={me} role={role} onClose={() => setComposer(false)} onPosted={afterPosted} />}

@@ -4,27 +4,32 @@ import toast from 'react-hot-toast'
 import ForumModal from './ForumModal'
 import ForumAvatar from './ForumAvatar'
 import Icon from '../Icon'
-import { ALLOWED_ATTACH_ACCEPT, FORUM_LIMITS, firstName } from './forumUtils'
+import { ALLOWED_ATTACH_ACCEPT, FORUM_FEATURES, FORUM_LIMITS, firstName } from './forumUtils'
 import { fmtSize } from '../../../utils/file'
 import { MODULE_LABELS } from '../../../config/menus'
 import { createForumPost } from '../../../store/action/action'
 
-
+/**
+ * UC7 – Popup "Tạo bài viết" (giống Facebook).
+ * Trường bắt buộc: Tiêu đề, Nội dung. Tệp đính kèm (ảnh / tài liệu) là tùy chọn.
+ */
 export default function PostComposerModal({ user, role, onClose, onPosted }) {
   const dispatch = useDispatch()
   const [title, setTitle] = useState('')
   const [content, setContent] = useState('')
-  const [files, setFiles] = useState([]) 
+  const [files, setFiles] = useState([]) // [{ file, url? }]
   const [errors, setErrors] = useState({})
   const [submitting, setSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState('')
   const fileRef = useRef(null)
   const taRef = useRef(null)
 
+  // Giải phóng URL xem trước ảnh khi đóng popup
   const filesRef = useRef(files)
   useEffect(() => { filesRef.current = files }, [files])
   useEffect(() => () => filesRef.current.forEach((f) => f.url && URL.revokeObjectURL(f.url)), [])
 
+  // Textarea tự giãn theo nội dung
   useEffect(() => {
     const el = taRef.current
     if (!el) return
@@ -78,7 +83,7 @@ export default function PostComposerModal({ user, role, onClose, onPosted }) {
     ))
     setSubmitting(false)
     if (res.ok) { onPosted?.(); onClose() }
-
+    // UC7 – 6.2: báo lỗi và GIỮ NGUYÊN nội dung đã nhập
     else setSubmitError(res.message)
   }
 
@@ -116,7 +121,7 @@ export default function PostComposerModal({ user, role, onClose, onPosted }) {
         />
         {errors.content && <div className="fm-error">{errors.content}</div>}
 
-        {files.length > 0 && (
+        {FORUM_FEATURES.UPLOAD_ATTACHMENTS && files.length > 0 && (
           <div className="fm-previews">
             {files.map((f, i) => (
               <div key={i} className={`fm-preview ${f.url ? '' : 'fm-preview--file'}`}>
@@ -135,18 +140,20 @@ export default function PostComposerModal({ user, role, onClose, onPosted }) {
           </div>
         )}
 
-        <div className="fm-addbar">
-          <span>Thêm vào bài viết của bạn</span>
-          <div className="fm-addbar__icons">
-            <button type="button" title="Ảnh" className="fm-addbar__btn fm-addbar__btn--img" onClick={() => fileRef.current?.click()}>
-              <Icon name="image" size={24} />
-            </button>
-            <button type="button" title="Tệp đính kèm" className="fm-addbar__btn fm-addbar__btn--file" onClick={() => fileRef.current?.click()}>
-              <Icon name="paperclip" size={24} />
-            </button>
+        {FORUM_FEATURES.UPLOAD_ATTACHMENTS && (
+          <div className="fm-addbar">
+            <span>Thêm vào bài viết của bạn</span>
+            <div className="fm-addbar__icons">
+              <button type="button" title="Ảnh" className="fm-addbar__btn fm-addbar__btn--img" onClick={() => fileRef.current?.click()}>
+                <Icon name="image" size={24} />
+              </button>
+              <button type="button" title="Tệp đính kèm" className="fm-addbar__btn fm-addbar__btn--file" onClick={() => fileRef.current?.click()}>
+                <Icon name="paperclip" size={24} />
+              </button>
+            </div>
+            <input ref={fileRef} type="file" hidden multiple accept={ALLOWED_ATTACH_ACCEPT} onChange={(e) => addFiles(e.target.files)} />
           </div>
-          <input ref={fileRef} type="file" hidden multiple accept={ALLOWED_ATTACH_ACCEPT} onChange={(e) => addFiles(e.target.files)} />
-        </div>
+        )}
 
         {submitError && <div className="fm-error fm-error--box">{submitError}</div>}
 

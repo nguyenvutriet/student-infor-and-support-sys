@@ -37,4 +37,10 @@ public class GlobalExceptionHandler {
                 .header(HttpHeaders.RETRY_AFTER, String.valueOf(ex.getRetryAfterSeconds()))
                 .body(body);
     }
+
+    @ExceptionHandler(ResourceNotFoundException.class)
+    public ResponseEntity<Map<String,String>> notFound(ResourceNotFoundException e) {
+        return ResponseEntity.status(404).body(Map.of("message", e.getMessage()));
+    }
+
 }
