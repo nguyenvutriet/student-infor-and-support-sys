@@ -10,16 +10,11 @@ import { fmtSize } from '../../../utils/file'
 import { MODULE_LABELS } from '../../../config/menus'
 import { createForumPost } from '../../../store/action/action'
 
-/**
- * UC7 – Popup "Tạo bài viết" (giống Facebook).
- * Trường bắt buộc: Tiêu đề, Nội dung. Đính kèm (tùy chọn): Ảnh/Video, GIF, Tệp tài liệu.
- * Đã nhập mà bấm đóng/hủy → hộp xác nhận ngay giữa màn hình (không dùng alert của trình duyệt).
- */
 export default function PostComposerModal({ user, role, onClose, onPosted }) {
   const dispatch = useDispatch()
   const [title, setTitle] = useState('')
   const [content, setContent] = useState('')
-  const [files, setFiles] = useState([]) // [{ file, url? }]
+  const [files, setFiles] = useState([]) 
   const [errors, setErrors] = useState({})
   const [submitting, setSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState('')
@@ -28,12 +23,10 @@ export default function PostComposerModal({ user, role, onClose, onPosted }) {
   const fileRef = useRef(null)
   const taRef = useRef(null)
 
-  // Giải phóng URL xem trước ảnh khi đóng popup
   const filesRef = useRef(files)
   useEffect(() => { filesRef.current = files }, [files])
   useEffect(() => () => filesRef.current.forEach((f) => f.url && URL.revokeObjectURL(f.url)), [])
 
-  // Textarea tự giãn theo nội dung
   useEffect(() => {
     const el = taRef.current
     if (!el) return
@@ -42,14 +35,12 @@ export default function PostComposerModal({ user, role, onClose, onPosted }) {
   }, [content])
 
   const dirty = title.trim() || content.trim() || files.length > 0
-  // Đóng popup: chưa nhập gì → đóng luôn; đã nhập → hỏi xác nhận bằng hộp thoại của giao diện
   const requestClose = () => {
     if (submitting) return
     if (dirty) setConfirmClose(true)
     else onClose()
   }
 
-  // Mở hộp chọn tệp theo loại (Ảnh/Video, GIF, Tài liệu)
   const pick = (accept) => {
     if (!fileRef.current) return
     fileRef.current.accept = accept
@@ -108,7 +99,6 @@ export default function PostComposerModal({ user, role, onClose, onPosted }) {
     ))
     setSubmitting(false)
     if (res.ok) { onPosted?.(); onClose() }
-    // UC7 – 6.2: báo lỗi và GIỮ NGUYÊN nội dung đã nhập
     else setSubmitError(res.message)
   }
 

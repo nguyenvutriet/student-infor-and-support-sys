@@ -57,7 +57,6 @@ export function CommentList({ comments, loading, error, onRetry, ...rest }) {
   )
 }
 
-/** Ô nhập bình luận (dính đáy popup) – Enter để gửi, Shift+Enter xuống dòng */
 export function CommentInput({ user, replyTo, onCancelReply, onSubmit, inputRef }) {
   const [text, setText] = useState('')
   const [sending, setSending] = useState(false)

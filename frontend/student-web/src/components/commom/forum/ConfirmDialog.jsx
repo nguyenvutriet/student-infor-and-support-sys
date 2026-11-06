@@ -1,9 +1,5 @@
 import ForumModal from './ForumModal'
 
-/**
- * Hộp thoại xác nhận nằm giữa màn hình (thay cho window.confirm của trình duyệt).
- * Hiển thị chồng lên modal khác (level 2): ESC hoặc bấm "cancelText" = không làm gì cả.
- */
 export default function ConfirmDialog({
   title,
   message,

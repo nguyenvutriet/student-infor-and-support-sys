@@ -81,14 +81,10 @@ public class PostServiceImpl implements PostService {
         return createPostWithFiles(req.getTitle(), req.getContent(), List.of(), userId);
     }
 
-    // =====================================================================
-    //  API #3 – Đăng bài kèm ảnh / GIF / video / tệp (multipart)
-    // =====================================================================
     @Override
     @Transactional
     public PostDTO createPostWithFiles(String title, String content, List<MultipartFile> files, String userId) {
 
-        // 1. Tiêu đề / nội dung (UC7 – Exc 6.1)
         if (title == null || title.isBlank() || content == null || content.isBlank()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Vui lòng nhập đầy đủ thông tin");
         }
@@ -98,7 +94,6 @@ public class PostServiceImpl implements PostService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Tiêu đề hoặc nội dung vượt quá độ dài cho phép");
         }
 
-        // 2. Tệp đính kèm
         List<MultipartFile> validFiles = (files == null) ? List.of()
                 : files.stream().filter(f -> f != null && !f.isEmpty()).toList();
 
@@ -124,7 +119,6 @@ public class PostServiceImpl implements PostService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Tổng dung lượng đính kèm vượt quá 100MB");
         }
 
-        // 3. Tác giả + bài viết
         User author = findUser(userId);
 
         ForumPost post = new ForumPost();
@@ -136,7 +130,6 @@ public class PostServiceImpl implements PostService {
         post.setAttachments(new ArrayList<>());
         post.setVotes(new ArrayList<>());
 
-        // 4. Upload từng tệp, lỗi giữa chừng thì xóa các tệp đã lên Cloudinary
         List<CloudinaryService.UploadedFile> uploaded = new ArrayList<>();
         try {
             for (MultipartFile f : validFiles) {
@@ -162,16 +155,13 @@ public class PostServiceImpl implements PostService {
                 try {
                     cloudinaryService.delete(up.publicId(), up.resourceType());
                 } catch (Exception ignored) {
-                    // không để lỗi dọn dẹp che mất lỗi gốc
+
                 }
             }
             throw e;
         }
     }
 
-    // =====================================================================
-    //  API #4 – Thả / đổi cảm xúc (mỗi người một cảm xúc cho mỗi bài)
-    // =====================================================================
     @Override
     @Transactional
     public PostDTO reactToPost(Integer postId, String reactionType, String userId) {
@@ -196,15 +186,12 @@ public class PostServiceImpl implements PostService {
                     post.getVotes().add(n);
                     return n;
                 });
-        vote.setVoteType(type);   // đã có thì chỉ đổi loại, không thêm bản ghi mới
+        vote.setVoteType(type);
 
         forumPostRepo.save(post);
         return toDTO(post, userId);
     }
 
-    // =====================================================================
-    //  API #5 – Bỏ cảm xúc (chưa có cảm xúc thì vẫn trả 200)
-    // =====================================================================
     @Override
     @Transactional
     public PostDTO deleteReactionOfPost(Integer postId, String userId) {
@@ -223,9 +210,6 @@ public class PostServiceImpl implements PostService {
         return toDTO(post, userId);
     }
 
-    // =====================================================================
-    //  API #6 – Bình luận của bài viết (gốc → cũ nhất trước, kèm replies 1 cấp)
-    // =====================================================================
     @Override
     @Transactional(readOnly = true)
     public List<CommentDTO> getAllCommentByPostId(Integer postId) {
@@ -257,9 +241,6 @@ public class PostServiceImpl implements PostService {
         }).toList();
     }
 
-    // =====================================================================
-    //  API #7 – Gửi bình luận / phản hồi
-    // =====================================================================
     @Override
     @Transactional
     public CommentDTO createComment(Integer postId, CommentRequest request, String userId) {
@@ -287,15 +268,12 @@ public class PostServiceImpl implements PostService {
             if (parent.getForumPost() == null || !postId.equals(parent.getForumPost().getPostId())) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Bình luận cha không thuộc bài viết này");
             }
-            comment.setParentComment(rootOf(parent));   // chỉ lồng 1 cấp: trả lời reply thì gắn vào bình luận gốc
+            comment.setParentComment(rootOf(parent));
         }
 
         return toCommentDTO(commentRepo.save(comment), List.of());
     }
 
-    // =====================================================================
-    //  API #8 – Lưu bài viết (gọi lại khi đã lưu thì không đổi gì)
-    // =====================================================================
     @Override
     @Transactional
     public PostDTO savePost(Integer postId, String userId) {
@@ -307,7 +285,7 @@ public class PostServiceImpl implements PostService {
             SavedPost savedPost = new SavedPost();
             savedPost.setForumPost(post);
             savedPost.setUser(user);
-            savedPost.setCreateAt(LocalDateTime.now());   // SavedPost cần có trường createAt (dùng để sắp xếp ở API #10)
+            savedPost.setCreateAt(LocalDateTime.now());
             post.getSavedPosts().add(savedPost);
             savedPostRepo.save(savedPost);
         }
@@ -315,9 +293,6 @@ public class PostServiceImpl implements PostService {
         return toDTO(post, userId);
     }
 
-    // =====================================================================
-    //  API #9 – Bỏ lưu bài viết
-    // =====================================================================
     @Override
     @Transactional
     public PostDTO unsavePost(Integer postId, String userId) {
@@ -334,9 +309,6 @@ public class PostServiceImpl implements PostService {
         return toDTO(post, userId);
     }
 
-    // =====================================================================
-    //  API #10 – Kho lưu trữ: bài đã lưu (mới lưu nhất trước, bỏ bài đã bị ẩn)
-    // =====================================================================
     @Override
     @Transactional(readOnly = true)
     public PostResponse getSavedPosts(String userId, Integer pageNumber, Integer pageSize) {
@@ -360,11 +332,6 @@ public class PostServiceImpl implements PostService {
         return response;
     }
 
-    // =====================================================================
-    //  Hàm dùng chung
-    // =====================================================================
-
-    /** Bài viết phải tồn tại và đang hiển thị, nếu không trả 404 (FE sẽ gỡ bài khỏi danh sách). */
     private ForumPost findVisiblePost(Integer postId) {
         return forumPostRepo.findById(postId)
                 .filter(p -> p.getStatus() == ViewStatus.VISIBLE)
@@ -377,7 +344,7 @@ public class PostServiceImpl implements PostService {
     }
 
     private String roleOf(User u) {
-        return (u == null || u.getRole() == null) ? null : u.getRole().name().toLowerCase();   // student | staff | admin
+        return (u == null || u.getRole() == null) ? null : u.getRole().name().toLowerCase();
     }
 
     private Comment rootOf(Comment c) {
@@ -400,10 +367,6 @@ public class PostServiceImpl implements PostService {
         return dto;
     }
 
-    /**
-     * Đổi ForumPost → PostDTO bằng tay (KHÔNG dùng ModelMapper: nó ghép nhầm danh sách savedPosts/votes... vào
-     * các trường boolean/List của PostDTO và gây lỗi "PersistentBag to boolean").
-     */
     private PostDTO toDTO(ForumPost post, String currentUserId) {
         PostDTO dto = new PostDTO();
         dto.setPostId(post.getPostId());
@@ -418,7 +381,6 @@ public class PostServiceImpl implements PostService {
             dto.setAuthorRole(roleOf(post.getAuthor()));
         }
 
-        // Tệp đính kèm
         List<AttachmentDTO> attachments = post.getAttachments() == null ? List.of()
                 : post.getAttachments().stream().map(f -> {
             AttachmentDTO d = new AttachmentDTO();
@@ -433,7 +395,6 @@ public class PostServiceImpl implements PostService {
         }).toList();
         dto.setAttachments(attachments);
 
-        // Cảm xúc
         List<VoteDTO> votes = post.getVotes() == null ? List.of()
                 : post.getVotes().stream().map(v -> {
             VoteDTO d = new VoteDTO();

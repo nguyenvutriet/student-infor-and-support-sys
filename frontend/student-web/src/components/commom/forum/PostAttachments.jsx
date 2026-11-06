@@ -11,12 +11,6 @@ function DownloadIcon({ size = 18 }) {
   )
 }
 
-/**
- * Tệp đính kèm của bài viết:
- *  - ảnh / GIF / video: lưới kiểu Facebook (video có nút phát; ảnh bấm vào để mở bài viết)
- *  - tệp tài liệu: dòng có tên, dung lượng; bấm vào để tải về với đúng tên gốc
- * limit = số phương tiện (ảnh + video) tối đa hiện ở bảng tin; popup chi tiết hiện đủ.
- */
 export default function PostAttachments({ attachments = [], limit, onOpen }) {
   const media = attachments.filter((a) => isImageAttachment(a) || isVideoAttachment(a))
   const files = attachments.filter((a) => !isImageAttachment(a) && !isVideoAttachment(a))

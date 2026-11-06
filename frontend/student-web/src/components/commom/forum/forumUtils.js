@@ -11,7 +11,6 @@ export const REACTIONS = [
 
 export const REACTION_MAP = Object.fromEntries(REACTIONS.map((r) => [r.type, r]))
 
-// Loại vi phạm gợi ý (đặc tả chưa liệt kê cụ thể – xem file Word ghi chú)
 export const REPORT_REASONS = [
   { type: 'SPAM', label: 'Spam / quảng cáo' },
   { type: 'HATE', label: 'Ngôn từ xúc phạm, thù ghét' },
@@ -26,19 +25,15 @@ export const FORUM_LIMITS = {
   CONTENT_MAX: 5000,
   COMMENT_MAX: 1000,
   MAX_FILES: 5,
-  MAX_FILE_MB: 10,    // ảnh, GIF, tài liệu
-  MAX_VIDEO_MB: 50,   // video
-  MAX_TOTAL_MB: 100,  // tổng dung lượng một bài (BE: spring.servlet.multipart.max-request-size)
+  MAX_FILE_MB: 10,    
+  MAX_VIDEO_MB: 50,   
+  MAX_TOTAL_MB: 100,  
 }
 
-// Bật/tắt tính năng theo mức hoàn thiện của BE.
-//  UPLOAD_ATTACHMENTS = true  → hiện các nút Ảnh/Video, GIF, Tệp đính kèm (BE phải có API đăng bài multipart).
-//  UPLOAD_ATTACHMENTS = false → ẩn các nút, đăng bài chỉ gửi JSON.
 export const FORUM_FEATURES = {
   UPLOAD_ATTACHMENTS: true,
 }
 
-// Thuộc tính accept của <input type="file"> cho từng nút trong popup "Tạo bài viết"
 export const ACCEPT_MEDIA = 'image/png,image/jpeg,image/gif,image/webp,video/mp4,video/webm,video/quicktime,.png,.jpg,.jpeg,.gif,.webp,.mp4,.webm,.mov'
 export const ACCEPT_GIF = 'image/gif,.gif'
 export const ACCEPT_DOC = '.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.zip'
@@ -48,7 +43,6 @@ export const extOf = (name = '') => (name.includes('.') ? name.split('.').pop().
 const IMG_EXT = ['png', 'jpg', 'jpeg', 'gif', 'webp']
 const VID_EXT = ['mp4', 'webm', 'mov']
 
-// Phân loại tệp người dùng vừa chọn (File) → 'image' | 'video' | 'file' | null (không hỗ trợ)
 export function pickedKind(file) {
   const ext = extOf(file?.name)
   if (file?.type?.startsWith('image/') || IMG_EXT.includes(ext)) return IMG_EXT.includes(ext) ? 'image' : null
@@ -87,7 +81,6 @@ export function fullDate(iso) {
   })
 }
 
-// Ảnh hay tệp? (dựa vào fileType, nếu thiếu thì dựa đuôi tên tệp)
 export const isImageAttachment = (a) =>
   (a?.fileType || '').toLowerCase().startsWith('image/') ||
   /\.(png|jpe?g|gif|webp)$/i.test(a?.fileName || '')
@@ -96,7 +89,6 @@ export const isVideoAttachment = (a) =>
   (a?.fileType || '').toLowerCase().startsWith('video/') ||
   /\.(mp4|webm|mov)$/i.test(a?.fileName || '')
 
-// Tải tệp về máy với đúng tên gốc (fetch → blob → <a download>); lỗi (CORS/mạng) thì mở tab mới
 export async function downloadAttachment(a) {
   try {
     const res = await fetch(a.fileUrl)
@@ -114,7 +106,6 @@ export async function downloadAttachment(a) {
   }
 }
 
-// Các loại cảm xúc nhiều nhất (để hiện emoji cạnh số đếm)
 export function topReactions(summary = {}, n = 3) {
   return Object.entries(summary)
     .filter(([, c]) => c > 0)
@@ -124,12 +115,7 @@ export function topReactions(summary = {}, n = 3) {
     .filter(Boolean)
 }
 
-/* =====================================================================
- *  CHUYỂN ĐỔI DỮ LIỆU BE → FE  (FE theo BE: PostDTO / CommentDTO / VoteDTO / PostResponse)
- *  Mọi chỗ BE đặt tên/kiểu khác với giao diện đều xử lý ở đây, component không phải sửa.
- * ===================================================================== */
 
-// LocalDateTime có thể về dạng chuỗi ISO hoặc mảng [y, m, d, h, mi, s] (khi Jackson bật WRITE_DATES_AS_TIMESTAMPS)
 export function toIso(v) {
   if (!v) return null
   if (Array.isArray(v)) {
@@ -141,7 +127,6 @@ export function toIso(v) {
 
 const normRole = (r) => (r ? String(r).toLowerCase().replace(/^role_/, '') : undefined)
 
-// BE hiện chỉ trả authorId; nếu BE bổ sung authorName / authorAvatar / authorRole (hoặc object author) thì tự dùng
 export function normalizeAuthor(dto = {}) {
   const a = dto.author && typeof dto.author === 'object' ? dto.author : {}
   const userId = a.userId ?? dto.authorId ?? null
@@ -153,10 +138,9 @@ export function normalizeAuthor(dto = {}) {
   }
 }
 
-// reactionSummary: BE trả List<VoteDTO> → đếm theo reactionType thành { LIKE: 3, LOVE: 1 }
 export function summarizeVotes(list) {
   if (!list) return {}
-  if (!Array.isArray(list)) return list // đã là dạng map
+  if (!Array.isArray(list)) return list 
   return list.reduce((acc, v) => {
     const t = v.reactionType || v.voteType || v.type
     if (t) acc[t] = (acc[t] || 0) + 1
@@ -186,7 +170,6 @@ export function normalizePost(dto = {}, myUserId) {
   }
 }
 
-// CommentDTO của BE: { commentId, content, authorId, createdAt, replies } (chưa có parentId → suy ra từ cấp lồng nhau)
 export function normalizeComment(dto = {}, parentId = null) {
   return {
     commentId: dto.commentId,
@@ -198,7 +181,6 @@ export function normalizeComment(dto = {}, parentId = null) {
   }
 }
 
-// PostResponse của BE: { content, pageNumber, pageSize, totalElements, totalPages, lastPage } → { content, page, size, hasMore }
 export function normalizePostPage(data = {}, myUserId) {
   return {
     content: (data.content || []).map((p) => normalizePost(p, myUserId)),
