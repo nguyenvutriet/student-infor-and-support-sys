@@ -19,6 +19,7 @@ public class CloudinaryService {
     public static final Set<String> CHAT_ALLOWED = Set.of("pdf", "doc", "docx", "xls", "xlsx", "ppt", "pptx", "zip",
             "png", "jpg", "jpeg", "gif", "webp", "txt");
     private static final Set<String> IMAGE_EXT = Set.of("png", "jpg", "jpeg", "gif", "webp");
+    private static final Set<String> VIDEO_EXT = Set.of("mp4", "webm", "mov");
 
     public record UploadedFile(String publicId, String url, String resourceType, String format, long bytes) {}
 
@@ -42,7 +43,6 @@ public class CloudinaryService {
         }
     }
 
-    /** Tải tệp đính kèm tin nhắn (ảnh → resource_type image, còn lại raw). Việc kiểm tra định dạng/dung lượng do ChatService làm. */
     public UploadedFile uploadChat(MultipartFile file) {
         String ext = extension(file.getOriginalFilename());
         boolean image = IMAGE_EXT.contains(ext);
@@ -57,6 +57,27 @@ public class CloudinaryService {
                     String.valueOf(result.get("public_id")),
                     String.valueOf(result.get("secure_url")),
                     image ? "image" : "raw",
+                    ext,
+                    ((Number) (result.containsKey("bytes") ? result.get("bytes") : file.getSize())).longValue());
+        } catch (Exception e) {
+            throw new IllegalStateException("Không thể tải tập tin lên Cloudinary", e);
+        }
+    }
+
+    public UploadedFile uploadForum(MultipartFile file) {
+        String ext = extension(file.getOriginalFilename());
+        String type = IMAGE_EXT.contains(ext) ? "image" : VIDEO_EXT.contains(ext) ? "video" : "raw";
+        try {
+            Map<?, ?> result = cloudinary.uploader().upload(file.getBytes(), ObjectUtils.asMap(
+                    "folder", "student-hub/forum",
+                    "public_id", "raw".equals(type) ? UUID.randomUUID() + "." + ext : UUID.randomUUID().toString(),
+                    "resource_type", type,
+                    "use_filename", false,
+                    "unique_filename", true));
+            return new UploadedFile(
+                    String.valueOf(result.get("public_id")),
+                    String.valueOf(result.get("secure_url")),
+                    type,
                     ext,
                     ((Number) (result.containsKey("bytes") ? result.get("bytes") : file.getSize())).longValue());
         } catch (Exception e) {

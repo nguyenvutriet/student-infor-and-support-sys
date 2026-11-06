@@ -17,6 +17,8 @@ public class ForumPost {
     private Integer postId;
 
     private String title;
+
+    @Column(name = "content", nullable = false, columnDefinition = "TEXT")
     private String content;
     private LocalDateTime createAt;
 

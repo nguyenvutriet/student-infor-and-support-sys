@@ -11,6 +11,8 @@
 .fm-btn:hover { filter: brightness(1.1); }
 .fm-btn:disabled { opacity: .6; cursor: default; }
 .fm-btn--light { background: #e4e6eb; color: var(--text); }
+.fm-btn--danger { background: #d93025; }
+.fm-confirm__text { margin: 0; padding: 18px 20px; font-size: 15px; line-height: 1.5; color: var(--text); }
 .fm-link { border: 0; background: none; color: var(--link); font-weight: 600; padding: 0; }
 .fm-link:hover { text-decoration: underline; }
 
@@ -76,7 +78,9 @@
 .fm-imgs { display: grid; gap: 3px; margin: 10px -16px 0; cursor: pointer; overflow: hidden; }
 .fm-imgs__item { position: relative; overflow: hidden; background: #e9ecef; }
 .fm-imgs__item img { width: 100%; height: 100%; object-fit: cover; display: block; }
-.fm-imgs--1 .fm-imgs__item img { max-height: 520px; height: auto; }
+.fm-imgs__item video { width: 100%; height: 100%; object-fit: cover; display: block; background: #000; }
+.fm-imgs--1 .fm-imgs__item img, .fm-imgs--1 .fm-imgs__item video { max-height: 520px; height: auto; }
+.fm-imgs--1 .fm-imgs__item video { object-fit: contain; }
 .fm-imgs--2 { grid-template-columns: 1fr 1fr; }
 .fm-imgs--2 .fm-imgs__item { aspect-ratio: 1 / 1; }
 .fm-imgs--3 { grid-template-columns: 1fr 1fr; }
@@ -91,7 +95,17 @@
 .fm-detail .fm-imgs { margin-left: 0; margin-right: 0; border-radius: 8px; }
 
 /* tệp: dùng lại <FileList> chung */
-.fm-files { margin-top: 10px; }
+.fm-files { margin-top: 10px; display: flex; flex-direction: column; gap: 8px; }
+.fm-file {
+  width: 100%; display: flex; align-items: center; gap: 12px; padding: 10px 12px; border: 1px solid var(--border);
+  border-radius: 8px; background: #f7f8fa; text-align: left; font: inherit; color: var(--text); cursor: pointer;
+}
+.fm-file:hover { background: var(--hover); }
+.fm-file__ext { flex: none; min-width: 44px; padding: 8px 4px; border-radius: 6px; background: var(--primary); color: #fff; font-size: 12px; font-weight: 700; text-align: center; }
+.fm-file__info { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.fm-file__name { font-size: 15px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.fm-file__size { font-size: 13px; color: var(--text-2); }
+.fm-file__dl { flex: none; color: var(--primary); display: grid; place-items: center; }
 
 /* số liệu + nút thao tác */
 .fm-stats { display: flex; justify-content: space-between; align-items: center; padding: 10px 0 8px; color: var(--text-2); font-size: 14px; min-height: 40px; }
@@ -175,6 +189,10 @@
 .fm-addbar__btn:hover { background: var(--hover); }
 .fm-addbar__btn--img { color: #45bd62; }
 .fm-addbar__btn--file { color: #f5a300; }
+.fm-addbar__btn:disabled { opacity: .5; cursor: default; }
+.fm-gifbadge { display: inline-block; padding: 1px 5px; border: 2px solid #1fb6c1; border-radius: 6px; color: #1fb6c1; font-size: 11px; font-weight: 800; line-height: 1.2; }
+.fm-preview video { width: 100%; height: 100%; object-fit: cover; display: block; background: #000; }
+.fm-preview__play { position: absolute; inset: 0; margin: auto; width: 34px; height: 34px; border-radius: 50%; background: rgba(0, 0, 0, .55); color: #fff; display: grid; place-items: center; font-size: 14px; pointer-events: none; }
 .fm-submit { width: 100%; height: 40px; border: 0; border-radius: 8px; background: var(--primary); color: #fff; font-weight: 700; font-size: 15px; }
 .fm-submit:hover { filter: brightness(1.1); }
 .fm-submit--idle { background: #e4e6eb; color: #9a9da1; }

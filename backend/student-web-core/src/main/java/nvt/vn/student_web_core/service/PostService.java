@@ -4,16 +4,22 @@ import nvt.vn.student_web_core.payload.CommentDTO;
 import nvt.vn.student_web_core.payload.CommentRequest;
 import nvt.vn.student_web_core.payload.PostDTO;
 import nvt.vn.student_web_core.payload.PostResponse;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
 public interface PostService {
 
-    PostResponse getAllPost(String keyword, Integer pageNumber, Integer pageSize, String sortBy);
+//    PostResponse getAllPost(String keyword, Integer pageNumber, Integer pageSize, String sortBy);
+//
+//    PostDTO getPostById(Integer postId);
 
-    PostDTO getPostById(Integer postId);
+    @Transactional(readOnly = true)
+    PostResponse getAllPost(String keyword, Integer pageNumber, Integer pageSize, String sortBy, String userId);
 
+    @Transactional(readOnly = true)
+    PostDTO getPostById(Integer postId, String userId);
 
     PostDTO createPost(PostDTO req, String userId);
 

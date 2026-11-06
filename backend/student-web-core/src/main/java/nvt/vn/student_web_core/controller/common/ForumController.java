@@ -32,7 +32,7 @@ public class ForumController {
             @RequestParam(name = "sortBy", defaultValue = AppConstants.SORT_DIR, required = false) String sortBy
     ){
 
-        PostResponse postResponse = postService.getAllPost(keyword, pageNumber, pageSize, sortBy);
+        PostResponse postResponse = postService.getAllPost(keyword, pageNumber, pageSize, sortBy, authUtil.loggedInUser().getUserId());
 
         return new ResponseEntity<>(postResponse, HttpStatus.OK);
     }
@@ -40,7 +40,7 @@ public class ForumController {
     @GetMapping("/posts/{postId}")
     public ResponseEntity<PostDTO> getPost(@PathVariable Integer postId){
 
-        PostDTO postDTO = postService.getPostById(postId);
+        PostDTO postDTO = postService.getPostById(postId, authUtil.loggedInUser().getUserId());
 
         return new ResponseEntity<>(postDTO, HttpStatus.OK);
     }

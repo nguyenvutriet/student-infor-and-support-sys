@@ -26,18 +26,35 @@ export const FORUM_LIMITS = {
   CONTENT_MAX: 5000,
   COMMENT_MAX: 1000,
   MAX_FILES: 5,
-  MAX_FILE_MB: 10,
+  MAX_FILE_MB: 10,    // ảnh, GIF, tài liệu
+  MAX_VIDEO_MB: 50,   // video
+  MAX_TOTAL_MB: 100,  // tổng dung lượng một bài (BE: spring.servlet.multipart.max-request-size)
 }
 
 // Bật/tắt tính năng theo mức hoàn thiện của BE.
-//  UPLOAD_ATTACHMENTS = false → BE API #3 hiện nhận JSON (@RequestBody PostDTO), chưa nhận tệp → ẩn nút đính kèm.
-//  Khi BE đã làm multipart (xem file Word mục 4.2) đổi thành true.
+//  UPLOAD_ATTACHMENTS = true  → hiện các nút Ảnh/Video, GIF, Tệp đính kèm (BE phải có API đăng bài multipart).
+//  UPLOAD_ATTACHMENTS = false → ẩn các nút, đăng bài chỉ gửi JSON.
 export const FORUM_FEATURES = {
-  UPLOAD_ATTACHMENTS: false,
+  UPLOAD_ATTACHMENTS: true,
 }
 
-export const ALLOWED_ATTACH_ACCEPT =
-  'image/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.zip'
+// Thuộc tính accept của <input type="file"> cho từng nút trong popup "Tạo bài viết"
+export const ACCEPT_MEDIA = 'image/png,image/jpeg,image/gif,image/webp,video/mp4,video/webm,video/quicktime,.png,.jpg,.jpeg,.gif,.webp,.mp4,.webm,.mov'
+export const ACCEPT_GIF = 'image/gif,.gif'
+export const ACCEPT_DOC = '.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.zip'
+export const ALLOWED_ATTACH_ACCEPT = `${ACCEPT_MEDIA},${ACCEPT_DOC}`
+
+export const extOf = (name = '') => (name.includes('.') ? name.split('.').pop().toLowerCase() : '')
+const IMG_EXT = ['png', 'jpg', 'jpeg', 'gif', 'webp']
+const VID_EXT = ['mp4', 'webm', 'mov']
+
+// Phân loại tệp người dùng vừa chọn (File) → 'image' | 'video' | 'file' | null (không hỗ trợ)
+export function pickedKind(file) {
+  const ext = extOf(file?.name)
+  if (file?.type?.startsWith('image/') || IMG_EXT.includes(ext)) return IMG_EXT.includes(ext) ? 'image' : null
+  if (file?.type?.startsWith('video/') || VID_EXT.includes(ext)) return VID_EXT.includes(ext) ? 'video' : null
+  return ACCEPT_DOC.split(',').map((x) => x.slice(1)).includes(ext) ? 'file' : null
+}
 
 export function initials(name = '') {
   return (
@@ -74,6 +91,28 @@ export function fullDate(iso) {
 export const isImageAttachment = (a) =>
   (a?.fileType || '').toLowerCase().startsWith('image/') ||
   /\.(png|jpe?g|gif|webp)$/i.test(a?.fileName || '')
+
+export const isVideoAttachment = (a) =>
+  (a?.fileType || '').toLowerCase().startsWith('video/') ||
+  /\.(mp4|webm|mov)$/i.test(a?.fileName || '')
+
+// Tải tệp về máy với đúng tên gốc (fetch → blob → <a download>); lỗi (CORS/mạng) thì mở tab mới
+export async function downloadAttachment(a) {
+  try {
+    const res = await fetch(a.fileUrl)
+    if (!res.ok) throw new Error(String(res.status))
+    const url = URL.createObjectURL(await res.blob())
+    const link = document.createElement('a')
+    link.href = url
+    link.download = a.fileName || 'tep-dinh-kem'
+    document.body.appendChild(link)
+    link.click()
+    link.remove()
+    setTimeout(() => URL.revokeObjectURL(url), 1500)
+  } catch {
+    window.open(a.fileUrl, '_blank', 'noopener')
+  }
+}
 
 // Các loại cảm xúc nhiều nhất (để hiện emoji cạnh số đếm)
 export function topReactions(summary = {}, n = 3) {

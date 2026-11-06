@@ -3,15 +3,17 @@ import { useDispatch } from 'react-redux'
 import toast from 'react-hot-toast'
 import ForumModal from './ForumModal'
 import ForumAvatar from './ForumAvatar'
+import ConfirmDialog from './ConfirmDialog'
 import Icon from '../Icon'
-import { ALLOWED_ATTACH_ACCEPT, FORUM_FEATURES, FORUM_LIMITS, firstName } from './forumUtils'
+import { ACCEPT_DOC, ACCEPT_GIF, ACCEPT_MEDIA, FORUM_FEATURES, FORUM_LIMITS, firstName, pickedKind } from './forumUtils'
 import { fmtSize } from '../../../utils/file'
 import { MODULE_LABELS } from '../../../config/menus'
 import { createForumPost } from '../../../store/action/action'
 
 /**
  * UC7 – Popup "Tạo bài viết" (giống Facebook).
- * Trường bắt buộc: Tiêu đề, Nội dung. Tệp đính kèm (ảnh / tài liệu) là tùy chọn.
+ * Trường bắt buộc: Tiêu đề, Nội dung. Đính kèm (tùy chọn): Ảnh/Video, GIF, Tệp tài liệu.
+ * Đã nhập mà bấm đóng/hủy → hộp xác nhận ngay giữa màn hình (không dùng alert của trình duyệt).
  */
 export default function PostComposerModal({ user, role, onClose, onPosted }) {
   const dispatch = useDispatch()
@@ -21,6 +23,8 @@ export default function PostComposerModal({ user, role, onClose, onPosted }) {
   const [errors, setErrors] = useState({})
   const [submitting, setSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState('')
+  const [progress, setProgress] = useState(0)
+  const [confirmClose, setConfirmClose] = useState(false)
   const fileRef = useRef(null)
   const taRef = useRef(null)
 
@@ -38,24 +42,44 @@ export default function PostComposerModal({ user, role, onClose, onPosted }) {
   }, [content])
 
   const dirty = title.trim() || content.trim() || files.length > 0
+  // Đóng popup: chưa nhập gì → đóng luôn; đã nhập → hỏi xác nhận bằng hộp thoại của giao diện
   const requestClose = () => {
     if (submitting) return
-    if (dirty && !window.confirm('Bạn có muốn bỏ bài viết đang soạn không?')) return
-    onClose()
+    if (dirty) setConfirmClose(true)
+    else onClose()
+  }
+
+  // Mở hộp chọn tệp theo loại (Ảnh/Video, GIF, Tài liệu)
+  const pick = (accept) => {
+    if (!fileRef.current) return
+    fileRef.current.accept = accept
+    fileRef.current.click()
   }
 
   const addFiles = (list) => {
     const next = [...files]
+    let total = next.reduce((sum, f) => sum + f.file.size, 0)
     for (const f of Array.from(list)) {
+      const kind = pickedKind(f)
+      if (!kind) {
+        toast.error(`"${f.name}" có định dạng không được hỗ trợ`)
+        continue
+      }
       if (next.length >= FORUM_LIMITS.MAX_FILES) {
         toast.error(`Chỉ đính kèm tối đa ${FORUM_LIMITS.MAX_FILES} tệp`)
         break
       }
-      if (f.size > FORUM_LIMITS.MAX_FILE_MB * 1024 * 1024) {
-        toast.error(`"${f.name}" vượt quá ${FORUM_LIMITS.MAX_FILE_MB}MB`)
+      const maxMb = kind === 'video' ? FORUM_LIMITS.MAX_VIDEO_MB : FORUM_LIMITS.MAX_FILE_MB
+      if (f.size > maxMb * 1024 * 1024) {
+        toast.error(`"${f.name}" vượt quá ${maxMb}MB`)
         continue
       }
-      next.push({ file: f, url: f.type.startsWith('image/') ? URL.createObjectURL(f) : null })
+      if (total + f.size > FORUM_LIMITS.MAX_TOTAL_MB * 1024 * 1024) {
+        toast.error(`Tổng dung lượng đính kèm không được vượt quá ${FORUM_LIMITS.MAX_TOTAL_MB}MB`)
+        break
+      }
+      total += f.size
+      next.push({ file: f, kind, url: kind === 'file' ? null : URL.createObjectURL(f) })
     }
     setFiles(next)
     if (fileRef.current) fileRef.current.value = ''
@@ -77,8 +101,9 @@ export default function PostComposerModal({ user, role, onClose, onPosted }) {
     if (Object.keys(e).length) return
 
     setSubmitting(true)
+    setProgress(0)
     const res = await dispatch(createForumPost(
-      { title: title.trim(), content: content.trim(), files: files.map((f) => f.file) },
+      { title: title.trim(), content: content.trim(), files: files.map((f) => f.file), onProgress: setProgress },
       toast,
     ))
     setSubmitting(false)
@@ -124,17 +149,26 @@ export default function PostComposerModal({ user, role, onClose, onPosted }) {
         {FORUM_FEATURES.UPLOAD_ATTACHMENTS && files.length > 0 && (
           <div className="fm-previews">
             {files.map((f, i) => (
-              <div key={i} className={`fm-preview ${f.url ? '' : 'fm-preview--file'}`}>
-                {f.url ? <img src={f.url} alt={f.file.name} /> : (
+              <div key={i} className={`fm-preview ${f.kind === 'file' ? 'fm-preview--file' : ''}`}>
+                {f.kind === 'image' && <img src={f.url} alt={f.file.name} />}
+                {f.kind === 'video' && (
+                  <>
+                    <video src={f.url} muted preload="metadata" />
+                    <span className="fm-preview__play" aria-hidden="true">▶</span>
+                  </>
+                )}
+                {f.kind === 'file' && (
                   <>
                     <Icon name="file" size={26} />
                     <span className="fm-preview__name">{f.file.name}</span>
                     <span className="fm-preview__size">{fmtSize(f.file.size)}</span>
                   </>
                 )}
-                <button type="button" className="fm-preview__x" onClick={() => removeFile(i)} aria-label="Gỡ tệp">
-                  <Icon name="x" size={14} />
-                </button>
+                {submitting ? null : (
+                  <button type="button" className="fm-preview__x" onClick={() => removeFile(i)} aria-label="Gỡ tệp">
+                    <Icon name="x" size={14} />
+                  </button>
+                )}
               </div>
             ))}
           </div>
@@ -144,23 +178,38 @@ export default function PostComposerModal({ user, role, onClose, onPosted }) {
           <div className="fm-addbar">
             <span>Thêm vào bài viết của bạn</span>
             <div className="fm-addbar__icons">
-              <button type="button" title="Ảnh" className="fm-addbar__btn fm-addbar__btn--img" onClick={() => fileRef.current?.click()}>
+              <button type="button" title="Ảnh/video" aria-label="Ảnh/video" className="fm-addbar__btn fm-addbar__btn--img" disabled={submitting} onClick={() => pick(ACCEPT_MEDIA)}>
                 <Icon name="image" size={24} />
               </button>
-              <button type="button" title="Tệp đính kèm" className="fm-addbar__btn fm-addbar__btn--file" onClick={() => fileRef.current?.click()}>
+              <button type="button" title="Ảnh GIF" aria-label="Ảnh GIF" className="fm-addbar__btn fm-addbar__btn--gif" disabled={submitting} onClick={() => pick(ACCEPT_GIF)}>
+                <span className="fm-gifbadge">GIF</span>
+              </button>
+              <button type="button" title="Tệp đính kèm" aria-label="Tệp đính kèm" className="fm-addbar__btn fm-addbar__btn--file" disabled={submitting} onClick={() => pick(ACCEPT_DOC)}>
                 <Icon name="paperclip" size={24} />
               </button>
             </div>
-            <input ref={fileRef} type="file" hidden multiple accept={ALLOWED_ATTACH_ACCEPT} onChange={(e) => addFiles(e.target.files)} />
+            <input ref={fileRef} type="file" hidden multiple onChange={(e) => addFiles(e.target.files)} />
           </div>
         )}
 
         {submitError && <div className="fm-error fm-error--box">{submitError}</div>}
 
         <button type="button" className={`fm-submit ${ready ? '' : 'fm-submit--idle'}`} disabled={submitting} onClick={submit}>
-          {submitting ? 'Đang đăng…' : 'Đăng'}
+          {submitting ? (files.length && progress > 0 && progress < 100 ? `Đang tải lên… ${progress}%` : 'Đang đăng…') : 'Đăng'}
         </button>
       </div>
+
+      {confirmClose && (
+        <ConfirmDialog
+          title="Bỏ bài viết?"
+          message="Nếu thoát bây giờ, nội dung bạn đã soạn sẽ không được lưu."
+          confirmText="Bỏ bài viết"
+          cancelText="Tiếp tục chỉnh sửa"
+          danger
+          onCancel={() => setConfirmClose(false)}
+          onConfirm={() => { setConfirmClose(false); onClose() }}
+        />
+      )}
     </ForumModal>
   )
 }
