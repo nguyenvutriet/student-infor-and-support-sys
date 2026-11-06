@@ -45,11 +45,6 @@
   background: var(--hover); color: var(--text-2); font-size: 15px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;
 }
 .fm-compose__input:hover { background: #e4e6eb; }
-.fm-compose__btn {
-  height: 42px; padding: 0 14px; display: inline-flex; align-items: center; gap: 8px;
-  border: 0; border-radius: 8px; background: transparent; color: #2e9e4f; font-weight: 600;
-}
-.fm-compose__btn:hover { background: var(--hover); }
 
 /* ---------- Trạng thái ---------- */
 .fm-state { padding: 28px 16px; text-align: center; color: var(--text-2); display: flex; flex-direction: column; align-items: center; gap: 10px; }
@@ -62,7 +57,7 @@
 /* ---------- Bài viết ---------- */
 .fm-post { padding: 14px 16px 6px; }
 .fm-post__head { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
-.fm-post__who { display: flex; flex-wrap: wrap; align-items: center; line-height: 1.3; min-width: 0; }
+.fm-post__who { flex: 1; display: flex; flex-wrap: wrap; align-items: center; line-height: 1.3; min-width: 0; }
 .fm-post__who .fm-role { margin-left: 8px; }
 .fm-post__who strong { font-size: 15px; }
 .fm-post__who time { width: 100%; font-size: 12.5px; color: var(--text-2); }
@@ -77,10 +72,12 @@
 /* ảnh */
 .fm-imgs { display: grid; gap: 3px; margin: 10px -16px 0; cursor: pointer; overflow: hidden; }
 .fm-imgs__item { position: relative; overflow: hidden; background: #e9ecef; }
-.fm-imgs__item img { width: 100%; height: 100%; object-fit: cover; display: block; }
-.fm-imgs__item video { width: 100%; height: 100%; object-fit: cover; display: block; background: #000; }
-.fm-imgs--1 .fm-imgs__item img, .fm-imgs--1 .fm-imgs__item video { max-height: 520px; height: auto; }
-.fm-imgs--1 .fm-imgs__item video { object-fit: contain; }
+.fm-imgs__item { background: #eef0f3; }
+/* object-fit: contain → hiện TRỌN ảnh/video, không cắt góc (phần thừa là nền xám) */
+.fm-imgs__item img { width: 100%; height: 100%; object-fit: contain; display: block; cursor: zoom-in; }
+.fm-imgs__item video { width: 100%; height: 100%; object-fit: contain; display: block; background: #000; }
+/* 1 ảnh/video: rộng đúng khung, cao theo tỉ lệ thật (tối đa 80% chiều cao màn hình, ảnh co lại cho vừa chứ không bị cắt) */
+.fm-imgs--1 .fm-imgs__item img, .fm-imgs--1 .fm-imgs__item video { height: auto; max-height: min(80vh, 760px); }
 .fm-imgs--2 { grid-template-columns: 1fr 1fr; }
 .fm-imgs--2 .fm-imgs__item { aspect-ratio: 1 / 1; }
 .fm-imgs--3 { grid-template-columns: 1fr 1fr; }
@@ -89,7 +86,7 @@
 .fm-imgs--4 { grid-template-columns: 1fr 1fr; }
 .fm-imgs--4 .fm-imgs__item { aspect-ratio: 1 / 1; }
 .fm-imgs__more {
-  position: absolute; inset: 0; display: grid; place-items: center;
+  position: absolute; inset: 0; display: grid; place-items: center; cursor: zoom-in;
   background: rgba(0, 0, 0, .5); color: #fff; font-size: 34px; font-weight: 700;
 }
 .fm-detail .fm-imgs { margin-left: 0; margin-right: 0; border-radius: 8px; }
@@ -120,6 +117,7 @@
   border: 0; border-radius: 6px; background: transparent; color: var(--text-2); font-weight: 600; font-size: 14.5px;
 }
 .fm-action:hover { background: var(--hover); }
+.fm-action svg { flex: none; }
 .fm-action--saved { color: var(--primary); }
 .fm-action--report:hover { color: var(--red); }
 .fm-react { position: relative; flex: 1; display: flex; }
@@ -172,7 +170,7 @@
 .fm-composer__title::placeholder, .fm-composer__content::placeholder { color: #8a8d91; font-weight: 400; }
 .fm-previews { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 8px; margin: 8px 0; }
 .fm-preview { position: relative; aspect-ratio: 1 / 1; border-radius: 8px; overflow: hidden; border: 1px solid var(--border); background: var(--hover); }
-.fm-preview img { width: 100%; height: 100%; object-fit: cover; }
+.fm-preview img { width: 100%; height: 100%; object-fit: contain; background: #eef0f3; }
 .fm-preview--file { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; padding: 8px; text-align: center; color: var(--primary-dark); }
 .fm-preview__name { font-size: 12px; font-weight: 600; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text); }
 .fm-preview__size { font-size: 11.5px; color: var(--text-2); }
@@ -185,13 +183,14 @@
   padding: 8px 12px 8px 16px; border: 1px solid var(--border); border-radius: 8px; font-weight: 600;
 }
 .fm-addbar__icons { display: flex; gap: 4px; }
-.fm-addbar__btn { width: 40px; height: 40px; border: 0; border-radius: 50%; background: none; display: grid; place-items: center; }
+.fm-addbar__btn { width: 42px; height: 42px; border: 0; border-radius: 50%; background: none; display: grid; place-items: center; cursor: pointer; transition: background .12s, transform .12s; }
+.fm-addbar__btn:active { transform: scale(.92); }
 .fm-addbar__btn:hover { background: var(--hover); }
 .fm-addbar__btn--img { color: #45bd62; }
 .fm-addbar__btn--file { color: #f5a300; }
 .fm-addbar__btn:disabled { opacity: .5; cursor: default; }
 .fm-gifbadge { display: inline-block; padding: 1px 5px; border: 2px solid #1fb6c1; border-radius: 6px; color: #1fb6c1; font-size: 11px; font-weight: 800; line-height: 1.2; }
-.fm-preview video { width: 100%; height: 100%; object-fit: cover; display: block; background: #000; }
+.fm-preview video { width: 100%; height: 100%; object-fit: contain; display: block; background: #000; }
 .fm-preview__play { position: absolute; inset: 0; margin: auto; width: 34px; height: 34px; border-radius: 50%; background: rgba(0, 0, 0, .55); color: #fff; display: grid; place-items: center; font-size: 14px; pointer-events: none; }
 .fm-submit { width: 100%; height: 40px; border: 0; border-radius: 8px; background: var(--primary); color: #fff; font-weight: 700; font-size: 15px; }
 .fm-submit:hover { filter: brightness(1.1); }
@@ -279,7 +278,46 @@
 @media (max-width: 600px) {
   .fm-scard { flex-direction: column; }
   .fm-scard__thumb { width: 100%; height: 190px; }
-  .fm-compose__btn span { display: none; }
   .fm-overlay { padding: 0; }
   .fm-modal { max-height: 100vh; height: 100vh; border-radius: 0; }
 }
+
+/* ---------- Nút "..." và menu thả xuống của bài viết ---------- */
+.fm-menu { position: relative; flex: none; align-self: flex-start; }
+.fm-menu__btn {
+  width: 36px; height: 36px; border: 0; border-radius: 50%; background: transparent; color: var(--text-2);
+  display: grid; place-items: center; cursor: pointer;
+}
+.fm-menu__btn:hover, .fm-menu__btn--on { background: var(--hover); }
+.fm-menu__list {
+  position: absolute; top: calc(100% + 4px); right: 0; z-index: 30; width: 340px; max-width: calc(100vw - 32px);
+  padding: 8px; background: #fff; border-radius: 10px; border: 1px solid var(--border);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, .18); animation: fm-pop .12s ease-out;
+}
+.fm-menu__item {
+  width: 100%; display: flex; align-items: center; gap: 12px; padding: 8px 10px; border: 0; border-radius: 8px;
+  background: none; text-align: left; font-family: inherit; color: var(--text); cursor: pointer;
+}
+.fm-menu__item:hover { background: var(--hover); }
+.fm-menu__ico { flex: none; width: 24px; display: grid; place-items: center; color: var(--text); }
+.fm-menu__text { display: flex; flex-direction: column; min-width: 0; line-height: 1.35; }
+.fm-menu__text strong { font-size: 15px; font-weight: 600; }
+.fm-menu__text small { font-size: 12.5px; color: var(--text-2); }
+.fm-menu__sep { height: 1px; margin: 6px 8px; background: var(--border); }
+@media (max-width: 480px) { .fm-menu__list { width: 290px; } }
+
+/* ---------- Trình xem ảnh / video toàn màn hình ---------- */
+.fm-viewer { position: fixed; inset: 0; z-index: 500; background: rgba(0, 0, 0, .92); display: flex; align-items: center; justify-content: center; }
+.fm-viewer__stage { width: 100%; height: 100%; padding: 64px 80px; display: flex; align-items: center; justify-content: center; }
+.fm-viewer__stage img, .fm-viewer__stage video { max-width: 100%; max-height: 100%; object-fit: contain; display: block; background: transparent; }
+.fm-viewer__btn {
+  width: 44px; height: 44px; border: 0; border-radius: 50%; background: rgba(255, 255, 255, .16); color: #fff;
+  display: grid; place-items: center; cursor: pointer; transition: background .12s;
+}
+.fm-viewer__btn:hover { background: rgba(255, 255, 255, .3); }
+.fm-viewer__close { position: absolute; top: 12px; left: 12px; }
+.fm-viewer__top { position: absolute; top: 12px; right: 12px; display: flex; align-items: center; gap: 10px; color: #fff; font-size: 14px; }
+.fm-viewer__nav { position: absolute; top: 50%; margin-top: -22px; }
+.fm-viewer__nav--prev { left: 16px; }
+.fm-viewer__nav--next { right: 16px; }
+@media (max-width: 640px) { .fm-viewer__stage { padding: 64px 8px; } .fm-viewer__nav--prev { left: 6px; } .fm-viewer__nav--next { right: 6px; } }

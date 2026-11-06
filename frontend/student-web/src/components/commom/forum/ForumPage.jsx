@@ -13,7 +13,6 @@ import { getUserRole } from '../../../utils/roles'
 import { fetchForumPosts, fetchSavedForumPosts, toggleSaveForumPost } from '../../../store/action/action'
 import '../../../styles/forum.css'
 
-// Cuộn vô hạn: trả về callback-ref gắn vào phần tử "mốc" cuối danh sách; khi mốc lọt vào màn hình → onReach()
 function useSentinel(onReach, active) {
   const [node, setNode] = useState(null)
   useEffect(() => {
@@ -39,7 +38,7 @@ export default function ForumPage() {
   const [keyword, setKeyword] = useState('')
   const [focused, setFocused] = useState(false)
   const [composer, setComposer] = useState(false)
-  const [detail, setDetail] = useState(null) // { post, focusComment }
+  const [detail, setDetail] = useState(null)
 
   useEffect(() => {
     if (view === 'feed') dispatch(fetchForumPosts(keyword, 0))
@@ -68,7 +67,7 @@ export default function ForumPage() {
     const wasSearching = keyword !== ''
     backFromSearch()
     window.scrollTo({ top: 0, behavior: 'smooth' })
-    if (!wasSearching) dispatch(fetchForumPosts('', 0))
+    if (!wasSearching) dispatch(fetchForumPosts('', 0)) 
   }
 
   const afterPosted = () => { if (keyword) backFromSearch() }
@@ -94,6 +93,7 @@ export default function ForumPage() {
         />
       ) : (
         <div className="fm-feed">
+          {/* Cột trái: điều hướng nhanh */}
           <nav className="fm-rail fm-card" aria-label="Điều hướng diễn đàn">
             <button type="button" className={`fm-saved__item ${!searching ? 'fm-saved__item--on' : ''}`} onClick={goHome}>
               <span className="fm-saved__ico"><Icon name="home" size={20} /></span>
@@ -131,9 +131,6 @@ export default function ForumPage() {
                 <button type="button" className="fm-compose__input" onClick={() => setComposer(true)}>
                   {firstName(user?.fullName)} ơi, bạn đang nghĩ gì thế?
                 </button>
-                <button type="button" className="fm-compose__btn" onClick={() => setComposer(true)}>
-                  <Icon name="image" size={22} /> <span>Đăng bài viết</span>
-                </button>
               </div>
             )}
 
@@ -144,7 +141,7 @@ export default function ForumPage() {
             )}
 
             {feed.items.map((p) => (
-              <PostCard key={p.postId} post={p} canSave={canSave} onOpen={openPost} />
+              <PostCard key={p.postId} post={p} canSave={canSave} canReport={canReport} onOpen={openPost} />
             ))}
 
             {feed.loading && <div className="fm-state">Đang tải bài viết…</div>}

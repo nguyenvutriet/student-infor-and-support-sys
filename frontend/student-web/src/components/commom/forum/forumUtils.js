@@ -1,5 +1,3 @@
-// Hằng số + hàm tiện ích dùng chung cho module Diễn đàn
-
 export const REACTIONS = [
   { type: 'LIKE', emoji: '👍', label: 'Thích', color: '#2078f4' },
   { type: 'LOVE', emoji: '❤️', label: 'Yêu thích', color: '#f33e58' },

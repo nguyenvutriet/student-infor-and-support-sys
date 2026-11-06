@@ -3,8 +3,9 @@ import { useDispatch, useSelector } from 'react-redux'
 import toast from 'react-hot-toast'
 import ForumModal from './ForumModal'
 import ForumAvatar from './ForumAvatar'
-import Icon from '../Icon'
 import PostAttachments from './PostAttachments'
+import PostMenu from './PostMenu'
+import { CommentIcon } from './ForumIcons'
 import ReportModal from './ReportModal'
 import { CommentInput, CommentList } from './CommentSection'
 import { ReactionButton, ReactionSummary } from './ReactionBar'
@@ -14,7 +15,6 @@ import {
   addForumComment, closeForumDetail, fetchForumComments, fetchForumPostDetail,
   openForumDetail, reactForumPost, toggleSaveForumPost,
 } from '../../../store/action/action'
-
 
 export default function PostDetailModal({ post: initialPost, user, canSave, canReport, focusComment, onClose }) {
   const dispatch = useDispatch()
@@ -33,9 +33,7 @@ export default function PostDetailModal({ post: initialPost, user, canSave, canR
     dispatch(fetchForumPostDetail(postId, toast))
     dispatch(fetchForumComments(postId, toast))
     return () => dispatch(closeForumDetail())
-
   }, [dispatch, postId])
-
 
   useEffect(() => {
     if (post.removed) onClose()
@@ -83,6 +81,11 @@ export default function PostDetailModal({ post: initialPost, user, canSave, canR
               )}
               <time title={fullDate(post.createAt)}>{timeAgo(post.createAt)} · {fullDate(post.createAt)}</time>
             </div>
+            <PostMenu
+              saved={post.saved}
+              onToggleSave={canSave ? () => dispatch(toggleSaveForumPost(post, toast)) : undefined}
+              onReport={showReport ? () => setReport({ type: 'POST', id: postId, preview: post.title }) : undefined}
+            />
           </header>
 
           <h3 className="fm-post__title fm-post__title--lg">{post.title}</h3>
@@ -94,27 +97,8 @@ export default function PostDetailModal({ post: initialPost, user, canSave, canR
           <div className="fm-actions">
             <ReactionButton myReaction={post.myReaction} onReact={(type) => dispatch(reactForumPost(post, type, toast))} />
             <button type="button" className="fm-action" onClick={() => inputRef.current?.focus()}>
-              <Icon name="forum" size={19} /> <span>Bình luận</span>
+              <CommentIcon size={20} /> <span>Bình luận</span>
             </button>
-            {canSave && (
-              <button
-                type="button"
-                className={`fm-action ${post.saved ? 'fm-action--saved' : ''}`}
-                onClick={() => dispatch(toggleSaveForumPost(post, toast))}
-              >
-                <Icon name="bookmark" size={19} filled={post.saved} /> <span>{post.saved ? 'Đã lưu' : 'Lưu'}</span>
-              </button>
-            )}
-            {showReport && (
-              <button
-                type="button"
-                className="fm-action fm-action--report"
-                onClick={() => setReport({ type: 'POST', id: postId, preview: post.title })}
-                title="Báo cáo vi phạm"
-              >
-                <Icon name="flag" size={19} /> <span>Báo cáo</span>
-              </button>
-            )}
           </div>
 
           <CommentList

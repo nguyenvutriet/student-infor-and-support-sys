@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react'
-import Icon from '../Icon'
+import { LikeIcon } from './ForumIcons'
 import { REACTIONS, REACTION_MAP, topReactions } from './forumUtils'
 
 export function ReactionButton({ myReaction, onReact }) {
@@ -45,7 +45,7 @@ export function ReactionButton({ myReaction, onReact }) {
         onTouchStart={() => show(450)}
         onTouchEnd={() => clearTimeout(timer.current)}
       >
-        {cur ? <span className="fm-react__emoji">{cur.emoji}</span> : <Icon name="thumb" size={19} />}
+        {cur ? <span className="fm-react__emoji">{cur.emoji}</span> : <LikeIcon size={20} />}
         <span>{cur ? cur.label : 'Thích'}</span>
       </button>
     </div>

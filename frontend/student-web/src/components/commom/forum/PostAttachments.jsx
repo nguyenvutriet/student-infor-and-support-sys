@@ -1,17 +1,11 @@
+import { useState } from 'react'
+import MediaViewer from './MediaViewer'
+import { DownloadIcon } from './ForumIcons'
 import { downloadAttachment, extOf, isImageAttachment, isVideoAttachment } from './forumUtils'
 import { fmtSize } from '../../../utils/file'
 
-function DownloadIcon({ size = 18 }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-      <path d="M7 10l5 5 5-5" />
-      <path d="M12 15V3" />
-    </svg>
-  )
-}
-
-export default function PostAttachments({ attachments = [], limit, onOpen }) {
+export default function PostAttachments({ attachments = [], limit }) {
+  const [viewer, setViewer] = useState(null) // vị trí đang mở trong danh sách media
   const media = attachments.filter((a) => isImageAttachment(a) || isVideoAttachment(a))
   const files = attachments.filter((a) => !isImageAttachment(a) && !isVideoAttachment(a))
   const shown = limit ? media.slice(0, limit) : media
@@ -20,15 +14,17 @@ export default function PostAttachments({ attachments = [], limit, onOpen }) {
   return (
     <>
       {shown.length > 0 && (
-        <div className={`fm-imgs fm-imgs--${Math.min(shown.length, 4)}`} onClick={onOpen}>
+        <div className={`fm-imgs fm-imgs--${Math.min(shown.length, 4)}`}>
           {shown.map((a, i) => (
             <div className="fm-imgs__item" key={a.fileId ?? a.fileUrl}>
               {isVideoAttachment(a) ? (
-                <video src={a.fileUrl} controls preload="metadata" onClick={(e) => e.stopPropagation()} />
+                <video src={`${a.fileUrl}#t=0.1`} controls preload="metadata" playsInline />
               ) : (
-                <img src={a.fileUrl} alt={a.fileName} loading="lazy" />
+                <img src={a.fileUrl} alt={a.fileName} loading="lazy" onClick={() => setViewer(i)} />
               )}
-              {extra > 0 && i === shown.length - 1 && <span className="fm-imgs__more">+{extra}</span>}
+              {extra > 0 && i === shown.length - 1 && (
+                <span className="fm-imgs__more" onClick={() => setViewer(i)}>+{extra}</span>
+              )}
             </div>
           ))}
         </div>
@@ -49,11 +45,13 @@ export default function PostAttachments({ attachments = [], limit, onOpen }) {
                 <span className="fm-file__name">{a.fileName}</span>
                 {a.fileSize > 0 && <span className="fm-file__size">{fmtSize(a.fileSize)}</span>}
               </span>
-              <span className="fm-file__dl"><DownloadIcon /></span>
+              <span className="fm-file__dl"><DownloadIcon size={18} /></span>
             </button>
           ))}
         </div>
       )}
+
+      {viewer !== null && <MediaViewer items={media} start={viewer} onClose={() => setViewer(null)} />}
     </>
   )
 }

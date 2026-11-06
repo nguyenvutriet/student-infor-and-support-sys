@@ -4,6 +4,7 @@ import toast from 'react-hot-toast'
 import ForumModal from './ForumModal'
 import ForumAvatar from './ForumAvatar'
 import ConfirmDialog from './ConfirmDialog'
+import { FileAttachIcon, GifIcon, PhotoVideoIcon } from './ForumIcons'
 import Icon from '../Icon'
 import { ACCEPT_DOC, ACCEPT_GIF, ACCEPT_MEDIA, FORUM_FEATURES, FORUM_LIMITS, firstName, pickedKind } from './forumUtils'
 import { fmtSize } from '../../../utils/file'
@@ -168,14 +169,14 @@ export default function PostComposerModal({ user, role, onClose, onPosted }) {
           <div className="fm-addbar">
             <span>Thêm vào bài viết của bạn</span>
             <div className="fm-addbar__icons">
-              <button type="button" title="Ảnh/video" aria-label="Ảnh/video" className="fm-addbar__btn fm-addbar__btn--img" disabled={submitting} onClick={() => pick(ACCEPT_MEDIA)}>
-                <Icon name="image" size={24} />
+              <button type="button" title="Ảnh/video" aria-label="Ảnh/video" className="fm-addbar__btn" disabled={submitting} onClick={() => pick(ACCEPT_MEDIA)}>
+                <PhotoVideoIcon />
               </button>
-              <button type="button" title="Ảnh GIF" aria-label="Ảnh GIF" className="fm-addbar__btn fm-addbar__btn--gif" disabled={submitting} onClick={() => pick(ACCEPT_GIF)}>
-                <span className="fm-gifbadge">GIF</span>
+              <button type="button" title="Ảnh GIF" aria-label="Ảnh GIF" className="fm-addbar__btn" disabled={submitting} onClick={() => pick(ACCEPT_GIF)}>
+                <GifIcon />
               </button>
-              <button type="button" title="Tệp đính kèm" aria-label="Tệp đính kèm" className="fm-addbar__btn fm-addbar__btn--file" disabled={submitting} onClick={() => pick(ACCEPT_DOC)}>
-                <Icon name="paperclip" size={24} />
+              <button type="button" title="Tệp đính kèm" aria-label="Tệp đính kèm" className="fm-addbar__btn" disabled={submitting} onClick={() => pick(ACCEPT_DOC)}>
+                <FileAttachIcon />
               </button>
             </div>
             <input ref={fileRef} type="file" hidden multiple onChange={(e) => addFiles(e.target.files)} />
