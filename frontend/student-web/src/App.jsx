@@ -94,10 +94,12 @@ function App() {
                     </Route>
 
                     <Route element={<PrivateRoute allowedRoles={[ROLES.STUDENT]} />}>
+                        <Route element={<AppLayout />}>
                         <Route path="/student" element={<div>Giao diện STUDENT Ở ĐÂY NÈ MẤY NÍ ƠI</div>} />
                         <Route path="/student/requests" element={<ChatPage key="requests" />} />
                         <Route path="/student/messages" element={<ChatPage key="messages" />} />
                         <Route path="/student/forum" element={<ForumPage />} />
+                        </Route>
                     </Route>
 
                     <Route path="*" element={<HomeRedirect />} />

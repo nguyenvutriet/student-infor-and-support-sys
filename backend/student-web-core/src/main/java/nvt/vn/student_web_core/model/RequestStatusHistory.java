@@ -26,5 +26,4 @@ public class RequestStatusHistory {
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "requestId")
     private Request request;
-
 }
