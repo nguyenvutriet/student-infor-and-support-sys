@@ -19,6 +19,8 @@ public class Message {
     private String content;
     private LocalDateTime sendAt;
     private boolean isRecalled = false;
+    @Enumerated(EnumType.STRING)
+    private MessageType type = MessageType.USER;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "conversationId")

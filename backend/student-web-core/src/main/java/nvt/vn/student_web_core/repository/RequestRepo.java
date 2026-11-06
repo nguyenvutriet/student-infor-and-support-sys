@@ -1,7 +1,9 @@
 package nvt.vn.student_web_core.repository;
 
+import jakarta.persistence.LockModeType;
 import nvt.vn.student_web_core.model.Request;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.stereotype.Repository;
 import nvt.vn.student_web_core.model.RequestStatus;
 import org.springframework.data.jpa.repository.Query;
@@ -9,6 +11,7 @@ import org.springframework.data.repository.query.Param;
 import java.time.LocalDateTime;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface RequestRepo extends JpaRepository<Request, Integer> {
@@ -159,4 +162,71 @@ public interface RequestRepo extends JpaRepository<Request, Integer> {
             @Param("from") LocalDateTime from,
             @Param("to") LocalDateTime to
     );
+
+    // ===================== Nhắn tin / yêu cầu hỗ trợ =====================
+
+    /** Khóa dòng khi đổi trạng thái để tránh hai nhân viên cùng tiếp nhận / sinh viên xóa lúc đang xử lý. */
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT r FROM Request r WHERE r.requestId = :id")
+    Optional<Request> findByIdForUpdate(@Param("id") Integer id);
+
+    /** Sinh viên: chỉ thấy yêu cầu do mình tạo. */
+    @Query("""
+        SELECT r FROM Request r
+        JOIN FETCH r.student s
+        LEFT JOIN FETCH r.toDepartment d
+        WHERE r.isDeleted = false
+          AND s.userId = :studentId
+          AND r.status IN :statuses
+          AND LOWER(r.subject) LIKE :kw
+        ORDER BY r.requestId DESC
+    """)
+    List<Request> searchForStudent(@Param("studentId") String studentId,
+                                   @Param("statuses") List<RequestStatus> statuses,
+                                   @Param("kw") String kw);
+
+    /**
+     * Nhân viên - tab "Tiếp nhận yêu cầu":
+     *  - yêu cầu chờ tiếp nhận của đơn vị mình (kể cả yêu cầu được chuyển tiếp / trả về lại cho đơn vị mình);
+     *  - yêu cầu đang xử lý mà đơn vị mình được mời hỗ trợ nhưng CHƯA bấm tiếp nhận.
+     */
+    @Query("""
+        SELECT r FROM Request r
+        JOIN FETCH r.student s
+        LEFT JOIN FETCH r.toDepartment d
+        WHERE r.isDeleted = false
+          AND (LOWER(r.subject) LIKE :kw OR LOWER(s.fullName) LIKE :kw OR LOWER(s.userId) LIKE :kw)
+          AND (
+                (d.departmentId = :deptId
+                  AND r.status = nvt.vn.student_web_core.model.RequestStatus.PENDING)
+                OR (r.status = nvt.vn.student_web_core.model.RequestStatus.ACCEPTED
+                  AND EXISTS (SELECT si.inviteId FROM SupportInvitation si
+                              WHERE si.request = r AND si.department.departmentId = :deptId AND si.accepted = false))
+          )
+        ORDER BY r.requestId DESC
+    """)
+    List<Request> searchPendingForDepartment(@Param("deptId") String deptId,
+                                             @Param("kw") String kw);
+
+    /** Nhân viên - tab "Nhắn tin": mọi yêu cầu đơn vị mình đã tiếp nhận (hoặc đã tham gia hỗ trợ), không trùng tab kia. */
+    @Query("""
+        SELECT r FROM Request r
+        JOIN FETCH r.student s
+        LEFT JOIN FETCH r.toDepartment d
+        WHERE r.isDeleted = false
+          AND r.status IN :statuses
+          AND (LOWER(r.subject) LIKE :kw OR LOWER(s.fullName) LIKE :kw OR LOWER(s.userId) LIKE :kw)
+          AND (
+                (d.departmentId = :deptId
+                  AND r.status <> nvt.vn.student_web_core.model.RequestStatus.PENDING)
+                OR EXISTS (SELECT si.inviteId FROM SupportInvitation si
+                           WHERE si.request = r AND si.department.departmentId = :deptId
+                             AND (si.accepted = true OR r.status <> nvt.vn.student_web_core.model.RequestStatus.ACCEPTED))
+          )
+          AND NOT (d.departmentId = :deptId AND r.status = nvt.vn.student_web_core.model.RequestStatus.PENDING)
+        ORDER BY r.requestId DESC
+    """)
+    List<Request> searchConversationsForDepartment(@Param("deptId") String deptId,
+                                                   @Param("statuses") List<RequestStatus> statuses,
+                                                   @Param("kw") String kw);
 }

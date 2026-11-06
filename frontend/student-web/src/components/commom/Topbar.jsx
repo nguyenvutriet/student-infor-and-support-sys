@@ -18,7 +18,7 @@ export default function Topbar({
   onNotifications,
   onMessages,
   onProfile,
-  onLogout,
+  onChangePassword,
 }) {
   const [open, setOpen] = useState(false)
   const ref = useRef(null)
@@ -69,12 +69,45 @@ export default function Topbar({
                   <span>{MODULE_LABELS[module]}</span>
                 </div>
               </div>
-              <button type="button" className="ute-dropdown__item" onClick={() => { setOpen(false); onProfile?.() }}>
-                <span className="ute-dropdown__ico"><Icon name="user" /></span> Trang cá nhân
+              <button
+                  type="button"
+                  className="ute-dropdown__item"
+                  onClick={() => {
+                    setOpen(false);
+                    onProfile?.();
+                  }}
+              >
+              <span className="ute-dropdown__ico">
+                <Icon name="user" />
+              </span>
+                Trang cá nhân
               </button>
-              <button type="button" className="ute-dropdown__item" onClick={handleLogout}>
-                <span className="ute-dropdown__ico"><Icon name="logout" /></span> Đăng xuất
+
+              <button
+                  type="button"
+                  className="ute-dropdown__item"
+                  onClick={() => {
+                    setOpen(false);
+                    onChangePassword?.();
+                  }}
+              >
+              <span className="ute-dropdown__ico">
+                <Icon name="lock" />
+              </span>
+                Đổi mật khẩu
               </button>
+
+              <button
+                  type="button"
+                  className="ute-dropdown__item"
+                  onClick={handleLogout}
+              >
+              <span className="ute-dropdown__ico">
+                <Icon name="logout" />
+              </span>
+                Đăng xuất
+              </button>
+
             </div>
           )}
         </div>
