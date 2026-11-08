@@ -71,6 +71,57 @@ public class PostServiceImpl implements PostService {
 
     @Transactional(readOnly = true)
     @Override
+    public PostResponse getHiddenPosts(
+            String keyword,
+            Integer pageNumber,
+            Integer pageSize,
+            String sortBy,
+            String userId
+    ) {
+
+        // Sắp xếp bài viết
+        Sort sort = "asc".equalsIgnoreCase(sortBy)
+                ? Sort.by("createAt").ascending()
+                : Sort.by("createAt").descending();
+
+        Pageable pageable = PageRequest.of(pageNumber, pageSize, sort);
+
+        // Chỉ lấy bài viết có trạng thái HIDDEN
+        Specification<ForumPost> spec =
+                (root, q, cb) -> cb.equal(root.get("status"), ViewStatus.HIDDEN);
+
+        // Tìm kiếm theo tiêu đề
+        if (keyword != null && !keyword.isBlank()) {
+            String kw = "%" + keyword.trim().toLowerCase() + "%";
+
+            spec = spec.and((root, q, cb) ->
+                    cb.like(cb.lower(root.get("title")), kw)
+            );
+        }
+
+        // Truy vấn database
+        Page<ForumPost> postPage = forumPostRepo.findAll(spec, pageable);
+
+        // Chuyển đổi sang PostDTO
+        List<PostDTO> postDTOs = postPage.getContent()
+                .stream()
+                .map(post -> toDTO(post, userId))
+                .toList();
+
+        // Tạo response
+        PostResponse response = new PostResponse();
+        response.setContent(postDTOs);
+        response.setPageNumber(postPage.getNumber());
+        response.setPageSize(postPage.getSize());
+        response.setTotalElements(postPage.getTotalElements());
+        response.setTotalPages(postPage.getTotalPages());
+        response.setLastPage(postPage.isLast());
+
+        return response;
+    }
+
+    @Transactional(readOnly = true)
+    @Override
     public PostDTO getPostById(Integer postId, String userId) {
         return toDTO(findVisiblePost(postId), userId);
     }
@@ -212,11 +263,24 @@ public class PostServiceImpl implements PostService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<CommentDTO> getAllCommentByPostId(Integer postId) {
+    public List<CommentDTO> getAllCommentByPostId(Integer postId, boolean isAdmin) {
 
-        ForumPost post = findVisiblePost(postId);
+        ForumPost post;
 
-        List<Comment> all = commentRepo.findByForumPostAndIsActiveTrue(post);
+        if (isAdmin) {
+            post = forumPostRepo.findById(postId)
+                    .orElseThrow(() -> new ResponseStatusException(
+                            HttpStatus.NOT_FOUND,
+                            "Bài viết không tồn tại"
+                    ));
+        } else {
+            post = findVisiblePost(postId);
+        }
+
+        List<Comment> all = isAdmin
+                ? commentRepo.findByForumPost(post)
+                : commentRepo.findByForumPostAndIsActiveTrue(post);
+
         if (all == null || all.isEmpty()) return List.of();
 
         Comparator<Comment> oldestFirst =
@@ -358,6 +422,9 @@ public class PostServiceImpl implements PostService {
         dto.setCommentId(c.getCommentId());
         dto.setContent(c.getContent());
         dto.setCreatedAt(c.getCreateAt());
+        dto.setActive(c.isActive());
+
+
         if (c.getUser() != null) {
             dto.setAuthorId(c.getUser().getUserId());
             dto.setAuthorName(c.getUser().getFullName());

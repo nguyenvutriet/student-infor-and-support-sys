@@ -17,6 +17,7 @@ public class Report {
     private String reason;
     private String adminNote;
     private boolean isResolved = false;
+    private boolean isViolation = false;
     private LocalDateTime createAt;
     private LocalDateTime handleAt;
 

@@ -1,5 +1,0 @@
-]633;E;{ echo "========== BACKEND CONTROLLER =========="\x3b find backend/student-web-core/src/main/java/nvt/vn/student_web_core/controller/admin -type f\x3b  echo "========== BACKEND PAYLOAD =========="\x3b find backend/student-web-core/src/main/java/nvt/vn/student_web_core/payload/admin -type f\x3b  echo "========== FRONTEND API =========="\x3b find frontend/student-web/src/api -type f\x3b  echo "========== FRONTEND ADMIN COMPONENTS =========="\x3b find frontend/student-web/src/components/admin -type f\x3b  echo "========== APP JSX =========="\x3b cat frontend/student-web/src/App.jsx\x3b } > report_cleanup_structure.txt;65f2d03b-d523-4148-8f78-553d16c68aef]633;C========== BACKEND CONTROLLER ==========
-========== BACKEND PAYLOAD ==========
-========== FRONTEND API ==========
-========== FRONTEND ADMIN COMPONENTS ==========
-========== APP JSX ==========

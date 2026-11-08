@@ -27,6 +27,22 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+import nvt.vn.student_web_core.repository.CommentRepo;
+
+import nvt.vn.student_web_core.model.ForumPost;
+import nvt.vn.student_web_core.model.ViewStatus;
+import nvt.vn.student_web_core.repository.ForumPostRepo;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+
+import java.util.Map;
+
+import nvt.vn.student_web_core.service.PostService;
+import nvt.vn.student_web_core.util.AuthUtil;
+import nvt.vn.student_web_core.config.AppConstants;
+import nvt.vn.student_web_core.payload.PostResponse;
+
 @RestController
 @RequestMapping("/api/admin")
 @RequiredArgsConstructor
@@ -36,6 +52,14 @@ public class AdminController {
     private final ReportRepo reportRepo;
 
     private final AdminRepo adminRepo;
+
+    private final ForumPostRepo forumPostRepo;
+
+    private final CommentRepo commentRepo;
+
+    private final PostService postService;
+
+    private final AuthUtil authUtil;
 
     @GetMapping("/reports")
     @Transactional(readOnly = true)
@@ -51,6 +75,7 @@ public class AdminController {
                     item.put("reason", report.getReason());
                     item.put("adminNote", report.getAdminNote());
                     item.put("resolved", report.isResolved());
+                    item.put("isViolation", report.isViolation());
                     item.put("createAt", report.getCreateAt());
                     item.put("handleAt", report.getHandleAt());
 
@@ -72,8 +97,14 @@ public class AdminController {
 
                         item.put("targetStatus", post.getStatus().name());
 
+                        item.put(
+                                "targetHidden",
+                                post.getStatus() == ViewStatus.HIDDEN
+                        );
+
                         item.put("reportType", "POST");
                         item.put("targetId", post.getPostId());
+                        item.put("targetPostId", post.getPostId());
                         item.put("targetTitle", post.getTitle());
                         item.put("targetContent", post.getContent());
 
@@ -88,10 +119,31 @@ public class AdminController {
 
                         Comment comment = report.getComment();
 
+                        item.put("targetPostStatus",
+                                comment.getForumPost() != null
+                                        ? comment.getForumPost().getStatus().name()
+                                        : null
+                        );
+
                         item.put("targetStatus", comment.isActive());
+
+                        // Trạng thái ẩn/hiện của bình luận
+                        item.put("targetHidden", !comment.isActive());
+
+                        // Trạng thái ẩn/hiện của bài viết chứa bình luận
+                        item.put(
+                                "targetPostHidden",
+                                comment.getForumPost() != null &&
+                                        comment.getForumPost().getStatus() == ViewStatus.HIDDEN
+                        );
 
                         item.put("reportType", "COMMENT");
                         item.put("targetId", comment.getCommentId());
+                        item.put("targetPostId",
+                                comment.getForumPost() != null
+                                        ? comment.getForumPost().getPostId()
+                                        : null
+                        );
                         item.put("targetContent", comment.getContent());
 
                         item.put("targetTitle",
@@ -149,28 +201,25 @@ public class AdminController {
                         "Tài khoản hiện tại không phải ADMIN"
                 ));
 
-        // Nếu nội dung vi phạm thì ẩn nội dung
         if (request.violation()) {
 
-            // Báo cáo bài viết
-            if (report.getForumPost() != null
-                    && report.getComment() == null) {
-
+            // Chỉ ẩn nội dung khi ADMIN xác nhận vi phạm
+            if (report.getForumPost() != null) {
                 ForumPost post = report.getForumPost();
                 post.setStatus(ViewStatus.HIDDEN);
-            }
+                forumPostRepo.save(post);
 
-            // Báo cáo bình luận
-            else if (report.getComment() != null) {
-
+            } else if (report.getComment() != null) {
                 Comment comment = report.getComment();
                 comment.setActive(false);
+                commentRepo.save(comment);
             }
         }
 
-        // Cập nhật trạng thái báo cáo
+        // Cập nhật riêng báo cáo đang được xử lý
         report.setResolved(true);
-        report.setAdminNote(request.adminNote().trim());
+        report.setViolation(request.violation());
+        report.setAdminNote(request.adminNote());
         report.setHandleAt(LocalDateTime.now());
         report.setHandledBy(admin);
 
@@ -182,6 +231,115 @@ public class AdminController {
                         "reportId", report.getReportId(),
                         "resolved", report.isResolved()
                 )
+        );
+    }
+
+    @PatchMapping("/forum/posts/{postId}/hide")
+    public ResponseEntity<?> hideForumPost(
+            @PathVariable Integer postId
+    ) {
+        ForumPost post = forumPostRepo.findById(postId)
+                .orElse(null);
+
+        if (post == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        if (post.getStatus() == ViewStatus.HIDDEN) {
+            return ResponseEntity.ok(
+                    Map.of("message", "Bài viết đã được ẩn trước đó.")
+            );
+        }
+
+        post.setStatus(ViewStatus.HIDDEN);
+        forumPostRepo.save(post);
+
+        return ResponseEntity.ok(
+                Map.of("message", "Ẩn bài viết thành công.")
+        );
+    }
+
+    @PatchMapping("/forum/comments/{commentId}/hide")
+    @Transactional
+    public ResponseEntity<?> hideForumComment(
+            @PathVariable Integer commentId
+    ) {
+        Comment comment = commentRepo.findById(commentId)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Không tìm thấy bình luận"
+                ));
+
+        if (!comment.isActive()) {
+            return ResponseEntity.ok(
+                    Map.of("message", "Bình luận đã được ẩn trước đó.")
+            );
+        }
+
+        comment.setActive(false);
+        commentRepo.save(comment);
+
+        return ResponseEntity.ok(
+                Map.of("message", "Ẩn bình luận thành công.")
+        );
+    }
+
+    @PatchMapping("/forum/comments/{commentId}/restore")
+    @Transactional
+    public ResponseEntity<?> restoreForumComment(
+            @PathVariable Integer commentId
+    ) {
+        Comment comment = commentRepo.findById(commentId)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "Không tìm thấy bình luận"
+                ));
+
+        comment.setActive(true);
+        commentRepo.save(comment);
+
+        return ResponseEntity.ok(
+                Map.of("message", "Hiện bình luận thành công.")
+        );
+    }
+
+    @GetMapping("/forum/posts/hidden")
+    public ResponseEntity<PostResponse> getHiddenPosts(
+            @RequestParam(name = "keyword", required = false) String keyword,
+            @RequestParam(name = "pageNumber", defaultValue = AppConstants.PAGE_NUMBER) Integer pageNumber,
+            @RequestParam(name = "pageSize", defaultValue = AppConstants.PAGE_SIZE) Integer pageSize,
+            @RequestParam(name = "sortBy", defaultValue = AppConstants.SORT_DIR) String sortBy
+    ) {
+        String userId = authUtil.loggedInUser().getUserId();
+
+        PostResponse response = postService.getHiddenPosts(
+                keyword, pageNumber, pageSize, sortBy, userId
+        );
+
+        return ResponseEntity.ok(response);
+    }
+
+    @PatchMapping("/forum/posts/{postId}/restore")
+    @Transactional
+    public ResponseEntity<?> restoreForumPost(
+            @PathVariable Integer postId
+    ) {
+        ForumPost post = forumPostRepo.findById(postId)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Không tìm thấy bài viết"
+                ));
+
+        if (post.getStatus() == ViewStatus.VISIBLE) {
+            return ResponseEntity.ok(
+                    Map.of("message", "Bài viết đang được hiển thị.")
+            );
+        }
+
+        post.setStatus(ViewStatus.VISIBLE);
+        forumPostRepo.save(post);
+
+        return ResponseEntity.ok(
+                Map.of("message", "Hiện bài viết thành công.")
         );
     }
 }

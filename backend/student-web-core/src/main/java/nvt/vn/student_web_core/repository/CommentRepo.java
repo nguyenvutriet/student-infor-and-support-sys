@@ -59,4 +59,6 @@ public interface CommentRepo extends JpaRepository<Comment, Integer> {
     Long countByForumPostAndIsActiveTrue(ForumPost post);
 
     List<Comment> findByForumPostAndIsActiveTrue(ForumPost post);
+
+    List<Comment> findByForumPost(ForumPost post);
 }

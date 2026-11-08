@@ -754,8 +754,27 @@
     color: #28766d;
     font-size: 13px;
     font-weight: 650;
-    cursor: not-allowed;
+
+    /* Sửa con trỏ và thêm hiệu ứng */
+    cursor: pointer;
+    transition: all 0.25s ease;
 }
+
+/* Hover */
+.cr-source-button:hover {
+    background: linear-gradient(135deg, #28766d, #17665e);
+    border-color: #28766d;
+    color: #ffffff;
+    box-shadow: 0 4px 12px rgba(40, 118, 109, 0.2);
+    transform: translateY(-2px);
+}
+
+/* Khi nhấn */
+.cr-source-button:active {
+    transform: translateY(0);
+    box-shadow: none;
+}
+
 
 .cr-status--violation {
     color: #dc2626;
@@ -767,3 +786,59 @@
     background: #d1fae5;
 }
 
+.cr-source-button--disabled,
+.cr-source-button:disabled {
+    opacity: 0.4;
+    filter: grayscale(0.8);
+    cursor: default;
+    pointer-events: none;
+    box-shadow: none;
+    transform: none;
+}
+
+/* Không cho hover làm thay đổi màu nút đã khóa */
+.cr-source-button--disabled:hover,
+.cr-source-button:disabled:hover {
+    background: linear-gradient(135deg, #e5f4f1, #d5ebe6);
+    border-color: #b8ded8;
+    color: #28766d;
+}
+
+/* Icon sắp xếp cạnh tiêu đề */
+.cr-sort-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 0;
+    border: none;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    font-weight: inherit;
+    cursor: pointer;
+    transition: color .2s ease;
+}
+
+.cr-sort-button span {
+    font-size: 14px;
+    color: #b9d9ef;
+    transition: transform .2s ease;
+}
+
+.cr-sort-button:hover {
+    color: #b9d9ef;
+}
+
+/* Ô chọn ngày */
+.cr-date-filter {
+    min-width: 145px;
+    padding-right: 10px;
+}
+
+/* Toolbar */
+.cr-toolbar__filters {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+}

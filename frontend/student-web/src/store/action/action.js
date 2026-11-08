@@ -162,8 +162,9 @@ export const removeForumPost = (postId) => ({ type: "FORUM_POST_REMOVE", payload
 export const fetchForumPostDetail = (postId, toast) => async (dispatch, getState) => {
     try {
         const { data } = await api.get(`/forum/posts/${postId}`);
-        dispatch({ type: "FORUM_POST_PATCH", payload: { postId, patch: normalizePost(data, currentUserId(getState)) } });
-        return { ok: true };
+        const post = normalizePost(data, currentUserId(getState));
+        dispatch({ type: "FORUM_POST_PATCH", payload: { postId, patch: post} });
+        return { ok: true, post };
     } catch (error) {
         if (isNotFound(error)) {
             toast.error("Bài viết không tồn tại hoặc đã bị xóa");

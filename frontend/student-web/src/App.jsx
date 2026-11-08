@@ -108,6 +108,7 @@ function App() {
                         <Route path="/admin/statistics" element={<AdminStatistics />} />
                         <Route path="/admin/posts" element={<AdminForum />} />
                         <Route path="/admin/notifications" element={<AdminNotifications />} /> 
+                        <Route path="/admin/forum" element={<AdminForum />} />
                     </Route>
 
                     <Route element={<PrivateRoute allowedRoles={[ROLES.STUDENT]} />}>

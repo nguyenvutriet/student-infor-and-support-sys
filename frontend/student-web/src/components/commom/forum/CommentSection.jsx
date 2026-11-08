@@ -4,10 +4,13 @@ import Icon from '../Icon'
 import { FORUM_LIMITS, fullDate, timeAgo } from './forumUtils'
 import { MODULE_LABELS } from '../../../config/menus'
 
-function CommentItem({ c, isReply, myUserId, canReport, onReply, onReport }) {
+function CommentItem({ c, isReply, myUserId, canReport, isAdmin, onReply, onReport, onHide, onRestore}) {
   const own = c.author?.userId === myUserId
   return (
-    <div className={`fm-cmt ${isReply ? 'fm-cmt--reply' : ''}`}>
+    <div 
+      id={`comment-${c.commentId}`}
+      className={`fm-cmt ${isReply ? 'fm-cmt--reply' : ''}`}
+    >
       <ForumAvatar name={c.author?.fullName} src={c.author?.avatar} size={isReply ? 28 : 34} />
       <div className="fm-cmt__main">
         <div className="fm-cmt__bubble">
@@ -22,6 +25,27 @@ function CommentItem({ c, isReply, myUserId, canReport, onReply, onReport }) {
         <div className="fm-cmt__meta">
           <time title={fullDate(c.createAt)}>{timeAgo(c.createAt)}</time>
           <button type="button" onClick={() => onReply(c)}>Phản hồi</button>
+          {isAdmin && (
+            c.active !== false && c.isActive !== false ? (
+              <button
+                type="button"
+                className="fm-cmt__hide"
+                onClick={() => onHide?.(c)}
+                title="Ẩn bình luận"
+              >
+                Ẩn
+              </button>
+            ) : (
+              <button
+                type="button"
+                className="fm-cmt__restore"
+                onClick={() => onRestore?.(c)}
+                title="Hiện bình luận"
+              >
+                Hiện
+              </button>
+            )
+          )}
           {canReport && !own && (
             <button type="button" className="fm-cmt__report" onClick={() => onReport(c)} title="Báo cáo vi phạm">
               <Icon name="flag" size={13} /> Báo cáo
@@ -100,3 +124,5 @@ export function CommentInput({ user, replyTo, onCancelReply, onSubmit, inputRef 
     </div>
   )
 }
+
+

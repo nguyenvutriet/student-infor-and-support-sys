@@ -174,6 +174,7 @@ export function normalizeComment(dto = {}, parentId = null) {
     content: dto.content ?? '',
     parentId: dto.parentId ?? parentId ?? null,
     author: normalizeAuthor(dto),
+    active: dto.active ?? true,
     createAt: toIso(dto.createAt ?? dto.createdAt),
     replies: (dto.replies || []).map((r) => normalizeComment(r, dto.commentId)),
   }

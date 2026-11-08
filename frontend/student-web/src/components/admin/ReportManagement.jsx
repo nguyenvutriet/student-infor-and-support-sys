@@ -3,6 +3,11 @@ import { useEffect, useMemo, useState } from "react";
 import Card, { PageHead, SearchField } from "../commom/Card";
 import { adminReportApi } from "../../api/adminReportApi";
 import "../../styles/reports.css";
+import { useNavigate } from "react-router-dom";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
+import { vi } from "date-fns/locale";
+import { format } from "date-fns";
 
 const PAGE_SIZE = 8;
 
@@ -13,6 +18,10 @@ export default function ReportPostManagement() {
     const [typeFilter, setTypeFilter] = useState("ALL");
     const [currentPage, setCurrentPage] = useState(1);
 
+    const [startDate, setStartDate] = useState("");
+    const [endDate, setEndDate] = useState("");
+    const [sortNewestFirst, setSortNewestFirst] = useState(true);
+
     const [loading, setLoading] = useState(false);
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState("");
@@ -22,19 +31,27 @@ export default function ReportPostManagement() {
     const [violation, setViolation] = useState(true);
     const [adminNote, setAdminNote] = useState("");
 
+    const navigate = useNavigate();
+
     // Chuẩn hóa dữ liệu báo cáo
     const normalizeReport = (item) => ({
         ...item,
         reportId: item.reportId,
         reportType: item.reportType,
         targetId: item.targetId,
+        targetPostId: item.targetPostId,
         targetTitle: item.targetTitle || "",
         targetContent: item.targetContent || "",
         authorName: item.authorName || "Không xác định",
         reporterName: item.reporterName || "Không xác định",
         reason: item.reason || "Không có lý do",
+        status: item.status || "PENDING",
         resolved: item.resolved ?? false,
+        isViolation: item.isViolation ?? false,
+        targetHidden: item.targetHidden ?? false,
+        targetPostHidden: item.targetPostHidden ?? false,
         targetStatus: item.targetStatus ?? null,
+        targetPostStatus: item.targetPostStatus ?? null,
         adminNote: item.adminNote || "",
         handledBy: item.handledBy || "",
     });
@@ -74,17 +91,12 @@ export default function ReportPostManagement() {
         pending: reports.filter((r) => !r.resolved).length,
         resolved: reports.filter((r) => r.resolved).length,
     }), [reports]);
-
-    // Lọc dữ liệu
+    
     const filteredReports = useMemo(() => {
         const keyword = search.trim().toLowerCase();
 
-        return reports.filter((report) => {
-            const isViolation =
-        report.reportType === "POST"
-            ? report.targetStatus === "HIDDEN"
-            : report.targetStatus === false;
-            
+        const filtered = reports.filter((report) => {
+
             const matchesSearch =
                 !keyword ||
                 [
@@ -103,16 +115,57 @@ export default function ReportPostManagement() {
                 statusFilter === "ALL" ||
                 (statusFilter === "PENDING" && !report.resolved) ||
                 (statusFilter === "RESOLVED" && report.resolved) ||
-                (statusFilter === "VIOLATION" && report.resolved && isViolation) ||
-                (statusFilter === "REJECTED" && report.resolved && !isViolation);
+                (statusFilter === "VIOLATION" &&
+                    report.resolved && report.isViolation) ||
+                (statusFilter === "REJECTED" &&
+                    report.resolved && !report.isViolation);
 
             const matchesType =
                 typeFilter === "ALL" ||
                 report.reportType === typeFilter;
 
-            return matchesSearch && matchesStatus && matchesType;
+            const reportDate = report.createAt
+                ? new Date(report.createAt)
+                : null;
+
+            const matchesStartDate =
+                !startDate ||
+                (reportDate &&
+                    !Number.isNaN(reportDate.getTime()) &&
+                    reportDate >= new Date(`${startDate}T00:00:00`));
+
+            const matchesEndDate =
+                !endDate ||
+                (reportDate &&
+                    !Number.isNaN(reportDate.getTime()) &&
+                    reportDate <= new Date(`${endDate}T23:59:59.999`));
+
+            return (
+                matchesSearch &&
+                matchesStatus &&
+                matchesType &&
+                matchesStartDate &&
+                matchesEndDate
+            );
         });
-    }, [reports, search, statusFilter, typeFilter]);
+
+        return filtered.sort((a, b) => {
+            const dateA = new Date(a.createAt || 0).getTime();
+            const dateB = new Date(b.createAt || 0).getTime();
+
+            return sortNewestFirst
+                ? dateB - dateA
+                : dateA - dateB;
+        });
+    }, [
+        reports,
+        search,
+        statusFilter,
+        typeFilter,
+        startDate,
+        endDate,
+        sortNewestFirst,
+    ]);
 
     // Phân trang
     const totalPages = Math.max(
@@ -129,7 +182,7 @@ export default function ReportPostManagement() {
 
     useEffect(() => {
         setCurrentPage(1);
-    }, [search, statusFilter, typeFilter]);
+    }, [search, statusFilter, typeFilter, startDate, endDate]);
 
     // Định dạng ngày
     const formatDate = (value) => {
@@ -266,15 +319,47 @@ export default function ReportPostManagement() {
                     </button>
                 }
             >
-                {/* Tìm kiếm và bộ lọc */}
+                
+                
                 <div className="cr-toolbar">
+                    {/* Khung tìm kiếm */}
                     <SearchField
                         value={search}
                         onChange={setSearch}
                         placeholder="Tìm mã báo cáo, nội dung, tác giả, người báo cáo..."
                     />
 
+                    {/* Bộ lọc */}
                     <div className="cr-toolbar__filters">
+                        <DatePicker
+                            selected={startDate ? new Date(`${startDate}T00:00:00`) : null}
+                            onChange={(date) =>
+                                setStartDate(date ? format(date, "yyyy-MM-dd") : "")
+                            }
+                            dateFormat="dd/MM/yyyy"
+                            locale={vi}
+                            placeholderText="Từ ngày"
+                            className="cr-filter cr-date-filter"
+                            selectsStart
+                            startDate={startDate ? new Date(`${startDate}T00:00:00`) : null}
+                            endDate={endDate ? new Date(`${endDate}T00:00:00`) : null}
+                        />
+
+                        <DatePicker
+                            selected={endDate ? new Date(`${endDate}T00:00:00`) : null}
+                            onChange={(date) =>
+                                setEndDate(date ? format(date, "yyyy-MM-dd") : "")
+                            }
+                            dateFormat="dd/MM/yyyy"
+                            locale={vi}
+                            placeholderText="Đến ngày"
+                            className="cr-filter cr-date-filter"
+                            selectsEnd
+                            startDate={startDate ? new Date(`${startDate}T00:00:00`) : null}
+                            endDate={endDate ? new Date(`${endDate}T00:00:00`) : null}
+                            minDate={startDate ? new Date(`${startDate}T00:00:00`) : null}
+                        />
+
                         <select
                             className="cr-filter"
                             value={typeFilter}
@@ -296,8 +381,22 @@ export default function ReportPostManagement() {
                             <option value="VIOLATION">Vi phạm</option>
                             <option value="REJECTED">Không vi phạm</option>
                         </select>
+
+                        {(startDate || endDate) && (
+                            <button
+                                type="button"
+                                className="ute-btn ute-btn--light"
+                                onClick={() => {
+                                    setStartDate("");
+                                    setEndDate("");
+                                }}
+                            >
+                                Xóa ngày
+                            </button>
+                        )}
                     </div>
                 </div>
+
 
                 {notice && (
                     <div className="cr-message cr-message--success">
@@ -338,7 +437,18 @@ export default function ReportPostManagement() {
                                         <th>Người đăng</th>
                                         <th>Người báo cáo</th>
                                         <th>Lý do</th>
-                                        <th>Ngày báo cáo</th>
+                                        <th>
+                                            <button
+                                                type="button"
+                                                className="cr-sort-button"
+                                                onClick={() => setSortNewestFirst((prev) => !prev)}
+                                                title={sortNewestFirst ? "Sắp xếp cũ nhất trước" : "Sắp xếp mới nhất trước"}
+                                                aria-label="Sắp xếp ngày báo cáo"
+                                            >
+                                                Ngày báo cáo
+                                                <span>{sortNewestFirst ? "↓" : "↑"}</span>
+                                            </button>
+                                        </th>
                                         <th>Trạng thái</th>
                                         <th>Thao tác</th>
                                     </tr>
@@ -420,7 +530,7 @@ export default function ReportPostManagement() {
                                                     className={`cr-status ${
                                                         !report.resolved
                                                             ? "cr-status--pending"
-                                                            : isViolation
+                                                            : report.isViolation
                                                                 ? "cr-status--violation"
                                                                 : "cr-status--rejected"
                                                     }`}
@@ -429,7 +539,7 @@ export default function ReportPostManagement() {
 
                                                     {!report.resolved
                                                         ? "Chờ xử lý"
-                                                        : isViolation
+                                                        : report.isViolation
                                                             ? "Vi phạm"
                                                             : "Không vi phạm"}
                                                 </span>
@@ -612,18 +722,48 @@ export default function ReportPostManagement() {
                                     ? "Nguồn bài viết"
                                     : "Nguồn bình luận"}
                             </label>
-
+                        </div>
+                        
                         <div className="cr-source-box">
-                                <button
-                                    type="button"
-                                    className="cr-source-button"
-                                    disabled
-                                >
-                                    {selectedReport.reportType === "POST"
-                                        ? "Xem bài viết"
-                                        : "Xem bình luận"}
-                                </button>
-                            </div>
+                            {(() => {
+                                const isTargetViolated =
+                                    selectedReport.targetHidden ||
+                                    selectedReport.targetPostHidden;
+
+                                return (
+                                    <button
+                                        type="button"
+                                        className="cr-source-button"
+                                        disabled={isTargetViolated}
+                                        onClick={() => {
+                                            const postId =
+                                                selectedReport.targetPostId ||
+                                                (selectedReport.reportType === "POST"
+                                                    ? selectedReport.targetId
+                                                    : null);
+
+                                            if (!postId) {
+                                                setError("Không tìm thấy bài viết nguồn.");
+                                                return;
+                                            }
+
+                                            const url = `/admin/forum?postId=${postId}${
+                                                selectedReport.reportType === "COMMENT"
+                                                    ? `&commentId=${selectedReport.targetId}`
+                                                    : ""
+                                            }`;
+
+                                            navigate(url);
+                                        }}
+                                    >
+                                        {isTargetViolated
+                                            ? "Nội dung đã bị ẩn"
+                                            : selectedReport.reportType === "POST"
+                                                ? "Xem bài viết"
+                                                : "Xem bình luận"}
+                                    </button>
+                                );
+                            })()}
                         </div>
 
                         {selectedReport.resolved ? (
@@ -647,22 +787,14 @@ export default function ReportPostManagement() {
 
                                 <span
                                     className={`cr-status ${
-                                        selectedReport.reportType === "POST"
-                                            ? selectedReport.targetStatus === "HIDDEN"
-                                                ? "cr-status--violation"
-                                                : "cr-status--rejected"
-                                            : selectedReport.targetStatus === false
-                                                ? "cr-status--violation"
-                                                : "cr-status--rejected"
+                                        selectedReport.isViolation
+                                            ? "cr-status--violation"
+                                            : "cr-status--rejected"
                                     }`}
                                 >
                                     <span className="cr-status__dot" />
 
-                                    {(
-                                        selectedReport.reportType === "POST"
-                                            ? selectedReport.targetStatus === "HIDDEN"
-                                            : selectedReport.targetStatus === false
-                                    )
+                                    {selectedReport.isViolation
                                         ? "Vi phạm"
                                         : "Không vi phạm"}
                                 </span>

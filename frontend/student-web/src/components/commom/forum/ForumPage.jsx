@@ -11,8 +11,10 @@ import PostDetailModal from './PostDetailModal'
 import SavedPostList from './SavedPostList'
 import { firstName } from './forumUtils'
 import { getUserRole } from '../../../utils/roles'
-import { fetchForumPosts, fetchSavedForumPosts, toggleSaveForumPost } from '../../../store/action/action'
+import { fetchForumPosts, fetchSavedForumPosts, toggleSaveForumPost, fetchForumPostDetail, fetchForumComments,} from '../../../store/action/action'
 import '../../../styles/forum.css'
+import { useSearchParams } from 'react-router-dom';
+import api from '../../../api/api'
 
 // Cuộn vô hạn: trả về callback-ref gắn vào phần tử "mốc" cuối danh sách; khi mốc lọt vào màn hình → onReach()
 function useSentinel(onReach, active) {
@@ -40,14 +42,22 @@ function useSentinel(onReach, active) {
  */
 export default function ForumPage() {
   const dispatch = useDispatch()
+  const [searchParams] = useSearchParams()
+
+  const requestedPostId = searchParams.get('postId')
+  const requestedCommentId = searchParams.get('commentId')
+
   const { user } = useSelector((s) => s.auth)
   const { feed, saved } = useSelector((s) => s.forum)
   const role = getUserRole(user) || 'student'
   const isAdmin = role === 'admin'
-  const canSave = !isAdmin
+  const canSave = true
   const canReport = !isAdmin
 
-  const [view, setView] = useState('feed') // 'feed' | 'saved'
+  const [view, setView] = useState('feed') 
+  const [hiddenPosts, setHiddenPosts] = useState([])
+  const [hiddenLoading, setHiddenLoading] = useState(false)
+  const [hiddenError, setHiddenError] = useState('')
   const [searchInput, setSearchInput] = useState('')
   const [keyword, setKeyword] = useState('')
   const [focused, setFocused] = useState(false)
@@ -57,8 +67,64 @@ export default function ForumPage() {
   // Vào bảng tin / đổi từ khóa → tải lại từ trang đầu; vào Kho lưu trữ → tải danh sách đã lưu
   useEffect(() => {
     if (view === 'feed') dispatch(fetchForumPosts(keyword, 0))
-    else dispatch(fetchSavedForumPosts(0))
+    else if (view === 'saved') dispatch(fetchSavedForumPosts(0))
   }, [dispatch, view, keyword])
+
+  const fetchHiddenPosts = async () => {
+    if (!isAdmin) return
+
+    try {
+      setHiddenLoading(true)
+      setHiddenError('')
+
+      const response = await api.get('/admin/forum/posts/hidden')
+
+      const data = response.data
+
+      setHiddenPosts(
+          Array.isArray(data) ? data : (data?.content || [])
+      )
+    } catch (error) {
+      console.error('Lỗi tải bài viết đã ẩn:', error)
+
+      setHiddenError(
+        error.response?.data?.message ||
+        'Không thể tải bài viết đã ẩn.'
+      )
+    } finally {
+      setHiddenLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    if (!requestedPostId) return
+
+    let cancelled = false
+
+    const openReportedPost = async () => {
+      const result = await dispatch(
+        fetchForumPostDetail(Number(requestedPostId), toast)
+      )
+
+      if (cancelled || !result?.ok || !result.post) return
+
+      setView('feed')
+
+      setDetail({
+        post: result.post,
+        focusComment: !!requestedCommentId,
+        focusCommentId: requestedCommentId
+          ? Number(requestedCommentId)
+          : null
+      })
+    }
+
+    openReportedPost()
+
+    return () => {
+      cancelled = true
+    }
+  }, [dispatch, requestedPostId, requestedCommentId])
 
   const feedMore = useCallback(() => dispatch(fetchForumPosts(feed.keyword, feed.page + 1)), [dispatch, feed.keyword, feed.page])
   const savedMore = useCallback(() => dispatch(fetchSavedForumPosts(saved.page + 1)), [dispatch, saved.page])
@@ -80,8 +146,11 @@ export default function ForumPage() {
 
   // "Trang chủ" ở cột trái: thoát tìm kiếm, về đầu bảng tin và tải lại
   const goHome = () => {
+    setView('feed')
+
     const wasSearching = keyword !== ''
     backFromSearch()
+
     window.scrollTo({ top: 0, behavior: 'smooth' })
     if (!wasSearching) dispatch(fetchForumPosts('', 0)) // đang tìm kiếm thì đổi keyword đã tự tải lại
   }
@@ -91,6 +160,112 @@ export default function ForumPage() {
 
   const searching = keyword !== ''
   const me = { userId: user?.userId, fullName: user?.fullName, avatar: user?.avatar }
+
+  const handleHidePost = async (post) => {
+    const confirmed = window.confirm(
+      `Bạn có chắc chắn muốn ẩn bài viết "${post.title}" không?`
+    )
+
+    if (!confirmed) return
+
+    try {
+      await api.patch(`/admin/forum/posts/${post.postId}/hide`)
+
+      toast.success('Đã ẩn bài viết thành công!')
+
+      setDetail(null)
+
+      // Loại bài viết vừa ẩn khỏi danh sách đang hiển thị
+      dispatch(fetchForumPosts(keyword, 0))
+    } catch (error) {
+      console.error('Lỗi ẩn bài viết:', error)
+
+      toast.error(
+        error.response?.data?.message || 'Không thể ẩn bài viết.'
+      )
+    }
+  }
+
+  const handleRestorePost = async (post) => {
+    const confirmed = window.confirm(
+        `Bạn có chắc chắn muốn hiện lại bài viết "${post.title}" không?`
+    )
+
+    if (!confirmed) return
+
+    try {
+        await api.patch(`/admin/forum/posts/${post.postId}/restore`)
+
+        toast.success('Đã hiện bài viết thành công!')
+
+        await fetchHiddenPosts()
+        dispatch(fetchForumPosts(keyword, 0))
+
+    } catch (error) {
+        console.error('Lỗi hiện bài viết:', error)
+
+        toast.error(
+            error.response?.data?.message || 'Không thể hiện bài viết.'
+        )
+    }
+  }
+
+  const handleHideComment = async (comment) => {
+    const confirmed = window.confirm(
+      'Bạn có chắc chắn muốn ẩn bình luận này không?'
+    )
+
+    if (!confirmed) return
+
+    try {
+      await api.patch(
+        `/admin/forum/comments/${comment.commentId}/hide`
+      )
+
+      toast.success('Đã ẩn bình luận thành công!')
+
+    } catch (error) {
+      console.error('Lỗi ẩn bình luận:', error)
+
+      toast.error(
+        error.response?.data?.message || 'Không thể ẩn bình luận.'
+      )
+
+      return
+    }
+
+    // Tải lại danh sách bình luận
+    await dispatch(
+      fetchForumComments(detail.post.postId, toast)
+    )
+
+    // Tải lại thông tin bài viết để cập nhật commentCount
+    await dispatch(
+      fetchForumPostDetail(detail.post.postId, toast)
+    )
+
+    // Cập nhật lại số bình luận trên danh sách bài viết
+    dispatch(fetchForumPosts(keyword, 0))
+  }
+
+  const handleRestoreComment = async (comment) => {
+    try {
+      await api.patch(
+        `/admin/forum/comments/${comment.commentId}/restore`
+      )
+
+      toast.success('Đã hiện bình luận thành công!')
+
+      await dispatch(fetchForumComments(detail.post.postId, toast))
+      await dispatch(fetchForumPostDetail(detail.post.postId, toast))
+      dispatch(fetchForumPosts(keyword, 0))
+    } catch (error) {
+      console.error('Lỗi hiện bình luận:', error)
+      toast.error(
+        error.response?.data?.message || 'Không thể hiện bình luận.'
+      )
+    }
+  }
 
   return (
     <div className="fm-page">
@@ -108,7 +283,100 @@ export default function ForumPage() {
           onOpen={(p) => openPost(p)}
           onUnsave={(p) => dispatch(toggleSaveForumPost(p, toast))}
         />
-      ) : (
+
+        ) : view === 'hidden' ? (
+            <div className="fm-feed">
+
+                {/* Thanh điều hướng bên trái */}
+                <nav className="fm-rail fm-card" aria-label="Điều hướng diễn đàn">
+
+                    <button
+                        type="button"
+                        className="fm-saved__item"
+                        onClick={goHome}
+                    >
+                        <span className="fm-saved__ico">
+                            <Icon name="home" size={20} />
+                        </span>
+                        Trang chủ
+                    </button>
+
+                    <button
+                        type="button"
+                        className="fm-saved__item"
+                        onClick={() => setView('saved')}
+                    >
+                        <span className="fm-saved__ico fm-saved__ico--gray">
+                            <Icon name="bookmark" size={20} filled />
+                        </span>
+                        Bài viết đã lưu
+                    </button>
+
+                    <button
+                        type="button"
+                        className="fm-saved__item fm-saved__item--on"
+                        onClick={fetchHiddenPosts}
+                    >
+                        <span className="fm-saved__ico">
+                            <Icon name="eyeOff" size={20} />
+                        </span>
+                        Bài viết đã ẩn
+                    </button>
+
+                </nav>
+
+                {/* Cột nội dung chính */}
+                <div className="fm-col">
+
+                    {/* Loading */}
+                    {hiddenLoading && (
+                        <div className="fm-state">
+                            Đang tải bài viết...
+                        </div>
+                    )}
+
+                    {/* Lỗi */}
+                    {hiddenError && (
+                        <div className="fm-card fm-state fm-state--err">
+                            <p>{hiddenError}</p>
+
+                            <button
+                                type="button"
+                                className="fm-btn"
+                                onClick={fetchHiddenPosts}
+                            >
+                                <Icon name="refresh" size={16} />
+                                Thử lại
+                            </button>
+                        </div>
+                    )}
+
+                    {/* Danh sách bài viết */}
+                    {!hiddenLoading && !hiddenError && hiddenPosts.map((p) => (
+                        <PostCard
+                            key={p.postId}
+                            post={p}
+                            canSave={canSave}
+                            canReport={false}
+                            isAdmin={isAdmin}
+                            isHidden={true}
+                            onOpen={openPost}
+                            onRestorePost={handleRestorePost}
+                        />
+                    ))}
+
+                    {/* Không có bài viết */}
+                    {!hiddenLoading && !hiddenError && hiddenPosts.length === 0 && (
+                        <div className="fm-card fm-state">
+                            <Icon name="eyeOff" size={40} />
+                            <p>Chưa có bài viết nào bị ẩn.</p>
+                        </div>
+                    )}
+
+                </div>
+            </div>
+        ) : (
+
         <div className="fm-feed">
           {/* Cột trái: điều hướng nhanh */}
           <nav className="fm-rail fm-card" aria-label="Điều hướng diễn đàn">
@@ -120,6 +388,23 @@ export default function ForumPage() {
               <button type="button" className="fm-saved__item" onClick={() => setView('saved')}>
                 <span className="fm-saved__ico fm-saved__ico--gray"><Icon name="bookmark" size={20} filled /></span>
                 Bài viết đã lưu
+              </button>
+            )}
+            {isAdmin && (
+              <button
+                type="button"
+                className={`fm-saved__item ${
+                  view === 'hidden' ? 'fm-saved__item--on' : ''
+                }`}
+                onClick={() => {
+                  setView('hidden')
+                  fetchHiddenPosts()
+                }}
+              >
+                <span className="fm-saved__ico fm-saved__ico--gray">
+                  <Icon name="eyeOff" size={20} />
+                </span>
+                Bài viết đã ẩn
               </button>
             )}
           </nav>
@@ -158,7 +443,7 @@ export default function ForumPage() {
             )}
 
             {feed.items.map((p) => (
-              <PostCard key={p.postId} post={p} canSave={canSave} canReport={canReport} onOpen={openPost} />
+              <PostCard key={p.postId} post={p} canSave={canSave} canReport={canReport} isAdmin={isAdmin} onOpen={openPost} onHidePost={handleHidePost}/>
             ))}
 
             {feed.loading && <div className="fm-state">Đang tải bài viết…</div>}
@@ -193,7 +478,12 @@ export default function ForumPage() {
           user={me}
           canSave={canSave}
           canReport={canReport}
+          isAdmin={isAdmin}
+          onHidePost={handleHidePost}
+          onHideComment={handleHideComment}
+          onRestoreComment={handleRestoreComment}
           focusComment={detail.focusComment}
+          focusCommentId={detail.focusCommentId}
           onClose={closeDetail}
         />
       )}

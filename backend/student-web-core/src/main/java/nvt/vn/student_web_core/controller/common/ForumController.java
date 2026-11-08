@@ -69,7 +69,8 @@ public class ForumController {
 
     @GetMapping("/posts/{postId}/comments")
     public ResponseEntity<List<CommentDTO>> getPostComments(@PathVariable Integer postId){
-        List<CommentDTO> comments = postService.getAllCommentByPostId(postId);
+        boolean isAdmin = "ADMIN".equals(authUtil.loggedInUser().getRole().name());
+        List<CommentDTO> comments = postService.getAllCommentByPostId(postId, isAdmin);
         return new ResponseEntity<>(comments, HttpStatus.OK);
     }
 
@@ -81,7 +82,7 @@ public class ForumController {
     }
 
     @PostMapping("/posts/{postId}/save")
-    @PreAuthorize("hasAnyRole('STUDENT','STAFF')")
+    @PreAuthorize("hasAnyRole('STUDENT','STAFF', 'ADMIN')")
     public ResponseEntity<PostDTO> savePost(@PathVariable Integer postId) {
         String userId = authUtil.loggedInUser().getUserId();
         PostDTO updatedPost = postService.savePost(postId, userId);
@@ -96,7 +97,7 @@ public class ForumController {
     }
 
     @GetMapping("/saved")
-    @PreAuthorize("hasAnyRole('STUDENT','STAFF')")
+    @PreAuthorize("hasAnyRole('STUDENT','STAFF', 'ADMIN')")
     public ResponseEntity<PostResponse> getSavedPosts(
             @RequestParam(name = "pageNumber", defaultValue = AppConstants.PAGE_NUMBER, required = false) Integer pageNumber,
             @RequestParam(name = "pageSize", defaultValue = AppConstants.PAGE_SIZE, required = false) Integer pageSize){
@@ -120,7 +121,5 @@ public class ForumController {
         PostDTO created = postService.createPostWithFiles(title, content, files, userId);
         return new ResponseEntity<>(created, HttpStatus.CREATED);
     }
-
-
 
 }

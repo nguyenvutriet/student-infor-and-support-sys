@@ -73,4 +73,6 @@ public interface ForumPostRepo extends JpaRepository<ForumPost, Integer>, JpaSpe
             @Param("from") LocalDateTime from,
             @Param("to") LocalDateTime to
     );
+
+    List<ForumPost> findByStatus(ViewStatus status);
 }

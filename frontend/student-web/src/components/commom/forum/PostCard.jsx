@@ -11,7 +11,7 @@ import { fullDate, timeAgo } from './forumUtils'
 import { MODULE_LABELS } from '../../../config/menus'
 import { reactForumPost, toggleSaveForumPost } from '../../../store/action/action'
 
-export default function PostCard({ post, canSave, canReport, onOpen }) {
+export default function PostCard({ post, canSave, canReport, isAdmin, isHidden = false, onOpen, onHidePost, onRestorePost}) {
   const dispatch = useDispatch()
   const me = useSelector((s) => s.auth?.user)
   const [report, setReport] = useState(false)
@@ -31,8 +31,10 @@ export default function PostCard({ post, canSave, canReport, onOpen }) {
         </div>
         <PostMenu
           saved={post.saved}
-          onToggleSave={canSave ? () => dispatch(toggleSaveForumPost(post, toast)) : undefined}
-          onReport={canReport && !own ? () => setReport(true) : undefined}
+          onToggleSave={!isHidden && canSave ? () => dispatch(toggleSaveForumPost(post, toast)) : undefined}
+          onReport={!isHidden && canReport && !own ? () => setReport(true) : undefined}
+          onHide={isAdmin && !isHidden ? () => onHidePost?.(post) : undefined}
+          onRestore={isAdmin && isHidden ? () => onRestorePost?.(post) : undefined}
         />
       </header>
 

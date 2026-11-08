@@ -16,7 +16,7 @@ import {
   openForumDetail, reactForumPost, toggleSaveForumPost,
 } from '../../../store/action/action'
 
-export default function PostDetailModal({ post: initialPost, user, canSave, canReport, focusComment, onClose }) {
+export default function PostDetailModal({ post: initialPost, user, canSave, canReport, isAdmin, onHidePost, onHideComment, onRestoreComment, focusComment, focusCommentId, onClose }) {
   const dispatch = useDispatch()
   const postId = initialPost.postId
   const live = useSelector((s) => s.forum.detailPost)
@@ -40,8 +40,33 @@ export default function PostDetailModal({ post: initialPost, user, canSave, canR
   }, [post.removed, onClose])
 
   useEffect(() => {
-    if (focusComment) setTimeout(() => inputRef.current?.focus(), 150)
-  }, [focusComment])
+    if (focusComment && !focusCommentId) setTimeout(() => inputRef.current?.focus(), 150)
+  }, [focusComment, focusCommentId])
+
+  useEffect(() => {
+  if (!focusCommentId || cLoading) return
+
+    const timer = setTimeout(() => {
+      const element = document.getElementById(
+        `comment-${focusCommentId}`
+      )
+
+      if (element) {
+        element.scrollIntoView({
+          behavior: 'smooth',
+          block: 'center'
+        })
+
+        element.classList.add('fm-cmt--reported')
+      } else {
+        console.warn(
+          `Không tìm thấy bình luận có ID: ${focusCommentId}`
+        )
+      }
+    }, 150)
+
+    return () => clearTimeout(timer)
+  }, [focusCommentId, cLoading, comments])
 
   const submitComment = async (content) => {
     const res = await dispatch(addForumComment(postId, { content, parentId: replyTo?.parentId ?? replyTo?.commentId ?? null }, toast))
@@ -85,6 +110,7 @@ export default function PostDetailModal({ post: initialPost, user, canSave, canR
               saved={post.saved}
               onToggleSave={canSave ? () => dispatch(toggleSaveForumPost(post, toast)) : undefined}
               onReport={showReport ? () => setReport({ type: 'POST', id: postId, preview: post.title }) : undefined}
+              onHide={isAdmin ? () => onHidePost?.(post) : undefined}
             />
           </header>
 
@@ -108,6 +134,9 @@ export default function PostDetailModal({ post: initialPost, user, canSave, canR
             onRetry={() => dispatch(fetchForumComments(postId, toast))}
             myUserId={user?.userId}
             canReport={canReport}
+            isAdmin={isAdmin}
+            onHide={onHideComment}
+            onRestore={onRestoreComment}
             onReply={(c) => { setReplyTo(c); inputRef.current?.focus() }}
             onReport={(c) => setReport({ type: 'COMMENT', id: c.commentId, preview: c.content })}
           />

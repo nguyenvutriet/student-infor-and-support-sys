@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 import { BookmarkIcon, MoreIcon, ReportIcon } from './ForumIcons'
+import { Eye, EyeOff } from 'lucide-react'
 
-export default function PostMenu({ saved, onToggleSave, onReport }) {
+export default function PostMenu({ saved, onToggleSave, onReport, onHide, onRestore}) {
   const [open, setOpen] = useState(false)
   const ref = useRef(null)
 
@@ -21,7 +22,7 @@ export default function PostMenu({ saved, onToggleSave, onReport }) {
     }
   }, [open])
 
-  if (!onToggleSave && !onReport) return null
+  if (!onToggleSave && !onReport && !onHide && !onRestore) return null
 
   const run = (fn) => () => { setOpen(false); fn() }
 
@@ -56,6 +57,46 @@ export default function PostMenu({ saved, onToggleSave, onReport }) {
               <span className="fm-menu__text">
                 <strong>Báo cáo bài viết</strong>
                 <small>Bài viết này vi phạm quy định của diễn đàn</small>
+              </span>
+            </button>
+          )}
+          {onHide && (
+            <>
+              {(onToggleSave || onReport) && (
+                <div className="fm-menu__sep" />
+              )}
+
+              <button
+                type="button"
+                role="menuitem"
+                className="fm-menu__item fm-menu__item--danger"
+                onClick={run(onHide)}
+              >
+                <span className="fm-menu__ico">
+                  <EyeOff size={22} />
+                </span>
+
+                <span className="fm-menu__text">
+                  <strong>Ẩn bài viết</strong>
+                  <small>Ẩn bài viết khỏi diễn đàn</small>
+                </span>
+              </button>
+            </>
+          )}
+          {onRestore && (
+            <button
+              type="button"
+              role="menuitem"
+              className="fm-menu__item"
+              onClick={run(onRestore)}
+            >
+              <span className="fm-menu__ico">
+                <Eye size={22} />
+              </span>
+
+              <span className="fm-menu__text">
+                <strong>Hiện bài viết</strong>
+                <small>Cho phép bài viết xuất hiện lại trên diễn đàn</small>
               </span>
             </button>
           )}

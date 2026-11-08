@@ -27,7 +27,7 @@ public interface PostService {
 
     PostDTO deleteReactionOfPost(Integer postId, String userId);
 
-    List<CommentDTO> getAllCommentByPostId(Integer postId);
+    List<CommentDTO> getAllCommentByPostId(Integer postId, boolean isAdmin);
 
     CommentDTO createComment(Integer postId, CommentRequest request, String userId);
 
@@ -38,4 +38,13 @@ public interface PostService {
     PostResponse getSavedPosts(String userId, Integer pageNumber, Integer pageSize);
 
     PostDTO createPostWithFiles(String title, String content, List<MultipartFile> files, String userId);
+
+    @Transactional(readOnly = true)
+    PostResponse getHiddenPosts(
+            String keyword,
+            Integer pageNumber,
+            Integer pageSize,
+            String sortBy,
+            String userId
+    );
 }

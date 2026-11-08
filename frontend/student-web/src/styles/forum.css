@@ -310,3 +310,47 @@
 .fm-viewer__nav--prev { left: 16px; }
 .fm-viewer__nav--next { right: 16px; }
 @media (max-width: 640px) { .fm-viewer__stage { padding: 64px 8px; } .fm-viewer__nav--prev { left: 6px; } .fm-viewer__nav--next { right: 6px; } }
+
+.fm-cmt--reported {
+    background: #fff3cd !important;
+    border: 2px solid #f0ad4e !important;
+    border-radius: 12px;
+    padding: 12px;
+    animation: reportedCommentHighlight 1.5s ease;
+}
+
+@keyframes reportedCommentHighlight {
+    0% {
+        background: #ffe08a;
+    }
+    100% {
+        background: #fff3cd;
+    }
+}
+
+.fm-menu__item--danger {
+  color: #dc2626;
+}
+
+.fm-menu__item--danger:hover {
+  background: #fef2f2;
+}
+
+.fm-menu__item--danger .fm-menu__ico {
+  color: #dc2626;
+}
+
+.fm-cmt__hide {
+  border: none;
+  background: transparent;
+  color: #dc2626;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+}
+
+.fm-cmt__hide:hover {
+  color: #991b1b;
+  text-decoration: underline;
+}
