@@ -9,9 +9,12 @@ import AdminLayout from "./components/admin/AdminLayout";
 import ReportManagement from "./components/admin/ReportManagement.jsx";
 import AccountManagement from "./components/admin/AccountManagement";
 import StatisticsDashboard from "./components/admin/StatisticsDashboard";
+
+import StaffDashboard from "./components/staff/StaffDashboard";
 import DocumentManagement from "./components/staff/DocumentManagement";
 import AppLayout from "./components/commom/AppLayout";
 import StudyManagement from "./components/staff/StudyManagement.jsx";
+
 import ForumPage from "./components/commom/forum/ForumPage.jsx";
 import { useSelector } from "react-redux";
 import ChatPage from "./components/chat/ChatPage";
@@ -88,6 +91,7 @@ function App() {
 
                     <Route element={<PrivateRoute allowedRoles={[ROLES.STAFF]} />}>
                         <Route element={<AppLayout />}>
+                            <Route path="/staff" element={<StaffDashboard />} />
                             <Route path="/staff/documents" element={<DocumentManagement />} />
                             <Route path="/staff/study" element={<StudyManagement />} />
                             <Route path="/staff/forum" element={<ForumPage />} />

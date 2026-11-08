@@ -164,6 +164,9 @@ public interface RequestRepo extends JpaRepository<Request, Integer> {
     );
 
     // ===================== Nhắn tin / yêu cầu hỗ trợ =====================
+    /** Yêu cầu hiện đang gửi tới đơn vị, tạo từ thời điểm :from (dùng cho biểu đồ tổng quan). */
+    @Query("SELECT r FROM Request r WHERE r.isDeleted = false AND r.toDepartment.departmentId = :deptId AND r.createdAt >= :from")
+    List<Request> findByDepartmentCreatedSince(@Param("deptId") String deptId, @Param("from") LocalDateTime from);
 
     /** Khóa dòng khi đổi trạng thái để tránh hai nhân viên cùng tiếp nhận / sinh viên xóa lúc đang xử lý. */
     @Lock(LockModeType.PESSIMISTIC_WRITE)
