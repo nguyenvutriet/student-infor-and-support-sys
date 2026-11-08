@@ -83,6 +83,7 @@ public class WebSecurityConfig {
                         .requestMatchers("/api/staff/**").hasRole("STAFF")
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .requestMatchers("/api/forum/**").hasAnyRole("STUDENT", "STAFF", "ADMIN")
+                        .requestMatchers("/api/notifications/**").hasAnyRole("STUDENT", "STAFF", "ADMIN")
                         .anyRequest().authenticated())
                 .authenticationProvider(authenticationProvider())
                 .oauth2Login(oauth -> oauth.successHandler(oAuth2SuccessHandler)

@@ -15,6 +15,8 @@ import StudyManagement from "./components/staff/StudyManagement.jsx";
 import ForumPage from "./components/commom/forum/ForumPage.jsx";
 import { useSelector } from "react-redux";
 import ChatPage from "./components/chat/ChatPage";
+import NotificationPage from "./components/commom/notification/NotificationPage";
+
 function AdminDashboard() {
     return (
         <AdminLayout activeKey="dashboard">
@@ -59,6 +61,15 @@ function AdminForum() {
     );
 }
 
+function AdminNotifications() {
+       const { user } = useSelector((state) => state.auth);
+       return (
+           <AdminLayout activeKey="notifications" user={{ name: user?.fullName, code: user?.userId, avatar: user?.avatar }}>
+               <NotificationPage />
+           </AdminLayout>
+       );
+   }
+
 function App() {
     return (
         <>
@@ -80,6 +91,7 @@ function App() {
                             <Route path="/staff/documents" element={<DocumentManagement />} />
                             <Route path="/staff/study" element={<StudyManagement />} />
                             <Route path="/staff/forum" element={<ForumPage />} />
+                            <Route path="/staff/notifications" element={<NotificationPage />} />
                             <Route path="/staff/requests" element={<ChatPage key="requests" initialTab="REQUESTS" />} />
                             <Route path="/staff/messages" element={<ChatPage key="messages" initialTab="MESSAGES" />} />
                         </Route>
@@ -91,6 +103,7 @@ function App() {
                         <Route path="/admin/reports" element={<AdminReports />} />
                         <Route path="/admin/statistics" element={<AdminStatistics />} />
                         <Route path="/admin/posts" element={<AdminForum />} />
+                        <Route path="/admin/notifications" element={<AdminNotifications />} /> 
                     </Route>
 
                     <Route element={<PrivateRoute allowedRoles={[ROLES.STUDENT]} />}>
@@ -99,6 +112,7 @@ function App() {
                         <Route path="/student/requests" element={<ChatPage key="requests" />} />
                         <Route path="/student/messages" element={<ChatPage key="messages" />} />
                         <Route path="/student/forum" element={<ForumPage />} />
+                        <Route path="/student/notifications" element={<NotificationPage />} />
                         </Route>
                     </Route>
 

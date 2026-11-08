@@ -2,6 +2,7 @@ import api from "../../api/api";
 import { getUserRole, ROLE_HOME } from "../../utils/roles";
 import { clearUser, saveUser } from "../../utils/authStorage";
 import { FORUM_FEATURES, normalizeComment, normalizePost, normalizePostPage } from "../../components/commom/forum/forumUtils";
+   import { normalizeNotificationPage } from "../../components/commom/notification/notificationUtils";
 
 const FORUM_PAGE_SIZE = 10;
 const apiMessage = (error, fallback) => error?.response?.data?.message || fallback;
@@ -242,5 +243,44 @@ export const reportForumContent = (payload, toast) => async () => {
         return { ok: true };
     } catch (error) {
         return { ok: false, message: apiMessage(error, "Không thể gửi báo cáo, vui lòng thử lại") };
+    }
+};
+
+const NOTI_PAGE_SIZE = 10;
+
+export const fetchNotifications = (keyword = "", page = 0) => async (dispatch) => {
+    dispatch({ type: "NOTI_LIST_REQUEST", payload: { keyword, page } });
+    try {
+        const params = { pageNumber: page, pageSize: NOTI_PAGE_SIZE };
+        if (keyword) params.keyword = keyword;
+        const { data } = await api.get("/notifications", { params });
+        dispatch({ type: "NOTI_LIST_SUCCESS", payload: normalizeNotificationPage(data) });
+    } catch (error) {
+        console.error("Notification list error:", error);
+        dispatch({ type: "NOTI_LIST_FAILURE", payload: { message: "Không thể tải thông báo" } }); 
+    }
+};
+
+export const fetchUnreadNotificationCount = () => async (dispatch) => {
+    try {
+        const { data } = await api.get("/notifications/unread-count");
+        dispatch({ type: "NOTI_UNREAD_COUNT", payload: Number(data?.unreadCount) || 0 });
+    } catch (error) {
+        console.error("Unread notification count error:", error);
+        dispatch({ type: "NOTI_UNREAD_COUNT", payload: null });
+    }
+};
+
+export const closeNotificationDetail = () => ({ type: "NOTI_DETAIL_CLEAR" });
+
+export const openNotification = (noti, toast) => async (dispatch) => {
+    dispatch({ type: "NOTI_DETAIL_SET", payload: noti });
+    if (noti.read) return;
+    dispatch({ type: "NOTI_MARK_READ", payload: noti.notiId });
+    try {
+        await api.put(`/notifications/${noti.notiId}/read`);
+    } catch (error) {
+        dispatch({ type: "NOTI_MARK_UNREAD", payload: noti.notiId });
+        toast?.error(apiMessage(error, "Không thể đánh dấu đã đọc"));
     }
 };

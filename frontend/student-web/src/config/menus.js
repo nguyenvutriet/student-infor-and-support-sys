@@ -17,6 +17,7 @@ export const MENUS = {
     { key: 'forum', label: 'Diễn đàn', icon: 'forum', path: '/student/forum' },
     { key: 'saved', label: 'Bài viết đã lưu', icon: 'bookmark', path: '/student/saved' },
     { group: 'Hỗ trợ' },
+    { key: 'notifications', label: 'Thông báo cá nhân', icon: 'bell', path: '/student/notifications' },
     { key: 'requests', label: 'Yêu cầu hỗ trợ', icon: 'inbox', path: '/student/requests' },
     { key: 'messages', label: 'Tin nhắn', icon: 'chat', path: '/student/messages' },
     { group: 'Học tập' },
@@ -26,6 +27,7 @@ export const MENUS = {
   ],
   staff: [
     { key: 'dashboard', label: 'Tổng quan', icon: 'dashboard', path: '/staff' },
+    { key: 'notifications', label: 'Thông báo cá nhân', icon: 'bell', path: '/staff/notifications' },
     { group: 'Hỗ trợ sinh viên' },
     { key: 'requests', label: 'Yêu cầu hỗ trợ', icon: 'inbox', path: '/staff/requests' },
     { key: 'messages', label: 'Tin nhắn', icon: 'chat', path: '/staff/messages' },
@@ -36,6 +38,7 @@ export const MENUS = {
   ],
   admin: [
     { key: 'dashboard', label: 'Tổng quan', icon: 'dashboard', path: '/admin' },
+    { key: 'notifications', label: 'Thông báo cá nhân', icon: 'bell', path: '/admin/notifications' },
     { group: 'Người dùng' },
     { key: 'accounts', label: 'Quản lý tài khoản', icon: 'users', path: '/admin/accounts' },
     { key: 'departments', label: 'Khoa / Viện', icon: 'building', path: '/admin/departments' },
