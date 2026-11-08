@@ -3,11 +3,10 @@ import { useDispatch, useSelector } from 'react-redux'
 import toast from 'react-hot-toast'
 import { PageHead } from '../Card'
 import Icon from '../Icon'
-import NotificationDetailModal from './NotificationDetailModal'
+import { ChevronIcon, RefreshIcon } from '../forum/ForumIcons'
 import { BellIcon, TypeIcon } from './NotificationIcons'
 import { splitDateTime, typeMeta } from './notificationUtils'
 import {
-  closeNotificationDetail,
   fetchNotifications,
   fetchUnreadNotificationCount,
   openNotification,
@@ -15,9 +14,10 @@ import {
 import '../../../styles/forum.css'
 import '../../../styles/notification.css'
 
+
 export default function NotificationPage() {
   const dispatch = useDispatch()
-  const { list, unreadCount, detail } = useSelector((s) => s.notification)
+  const { list, unreadCount } = useSelector((s) => s.notification)
   const [input, setInput] = useState('')
 
   useEffect(() => {
@@ -68,7 +68,7 @@ export default function NotificationPage() {
           <div className="fm-state fm-state--err nt-state">
             <p>{list.error}</p>
             <button type="button" className="fm-btn" onClick={() => dispatch(fetchNotifications(list.keyword, list.page))}>
-              <Icon name="refresh" size={16} /> Thử lại
+              <RefreshIcon size={16} spinning={list.loading} /> Thử lại
             </button>
           </div>
         ) : !list.loaded && list.loading ? (
@@ -84,7 +84,7 @@ export default function NotificationPage() {
               <table className="nt-table">
                 <thead>
                   <tr>
-                    <th>Tiêu đề mặc định</th>
+                    <th>Thông báo</th>
                     <th className="nt-col-kind">Loại</th>
                     <th className="nt-col-time">Thời gian gửi</th>
                   </tr>
@@ -129,11 +129,11 @@ export default function NotificationPage() {
                 <span className="nt-pager__info">Hiển thị {from}–{to} / {list.totalElements} thông báo</span>
                 <div className="nt-pager__btns">
                   <button type="button" className="fm-btn fm-btn--light" disabled={list.loading || list.page <= 0} onClick={() => goPage(list.page - 1)}>
-                    <Icon name="chevronLeft" size={16} /> Trước
+                    <ChevronIcon dir="left" size={16} /> Trước
                   </button>
                   <span className="nt-pager__page">Trang {list.page + 1} / {list.totalPages}</span>
                   <button type="button" className="fm-btn fm-btn--light" disabled={list.loading || list.page >= list.totalPages - 1} onClick={() => goPage(list.page + 1)}>
-                    Sau <Icon name="chevronRight" size={16} />
+                    Sau <ChevronIcon dir="right" size={16} />
                   </button>
                 </div>
               </div>
@@ -141,8 +141,6 @@ export default function NotificationPage() {
           </>
         )}
       </section>
-
-      {detail && <NotificationDetailModal notification={detail} onClose={() => dispatch(closeNotificationDetail())} />}
     </div>
   )
 }

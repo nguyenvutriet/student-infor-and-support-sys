@@ -1,17 +1,21 @@
-import { useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
 import Topbar from './Topbar'
 import Sidebar from './Sidebar'
+import NotificationDropdown from './notification/NotificationDropdown'
+import NotificationDetailModal from './notification/NotificationDetailModal'
+import { MENUS } from '../../config/menus'
+import { closeNotificationDetail, fetchUnreadNotificationCount } from '../../store/action/action'
 import '../../styles/layout.css'
 
 /**
- * Layout dùng chung cho cả 3 module.
  *
- * @param {'student'|'staff'|'admin'} module  quyết định menu trái
- * @param {string}   activeKey    key menu đang chọn
- * @param {(item)=>void} onNavigate  gọi khi bấm menu (item.path dùng với react-router)
- * @param {{name:string, code?:string, avatar?:string}} user  hiện ở thẻ người dùng trên menu trái
- * @param {ReactNode} rightPanel  (tùy chọn) cột phải, chỉ hiện khi màn hình ≥ 1400px
- * @param {object} badges         vd { requests: 3 } – số đỏ cạnh menu
+ * @param {'student'|'staff'|'admin'} module  
+ * @param {string}   activeKey    
+ * @param {(item)=>void} onNavigate 
+ * @param {{name:string, code?:string, avatar?:string}} user  
+ * @param {ReactNode} rightPanel  
+ * @param {object} badges      
  */
 export default function MainLayout({
   module = 'student',
@@ -28,7 +32,32 @@ export default function MainLayout({
   rightPanel,
   children,
 }) {
-  // Menu trái: mở rộng / thu gọn (chỉ còn icon). Nhớ lựa chọn; điện thoại mặc định thu gọn.
+  const dispatch = useDispatch()
+  const unreadFromStore = useSelector((s) => s.notification?.unreadCount)
+  const notiDetail = useSelector((s) => s.notification?.detail)
+  const unread = unreadNotifications ?? unreadFromStore
+  const [notiOpen, setNotiOpen] = useState(false)
+  const lastClosedAt = useRef(0)
+
+  useEffect(() => {
+    dispatch(fetchUnreadNotificationCount())
+    const timer = setInterval(() => dispatch(fetchUnreadNotificationCount()), 60000)
+    return () => clearInterval(timer)
+  }, [dispatch])
+
+  const closeNoti = useCallback(() => {
+    lastClosedAt.current = Date.now()
+    setNotiOpen(false)
+  }, [])
+
+  const toggleNoti = () => {
+    if (notiOpen) return closeNoti()
+    if (Date.now() - lastClosedAt.current < 300) return undefined
+    setNotiOpen(true)
+    onNotifications?.()
+    return undefined
+  }
+
   const [collapsed, setCollapsed] = useState(() => {
     try {
       const saved = localStorage.getItem('ute-menu-collapsed')
@@ -49,6 +78,12 @@ export default function MainLayout({
     onNavigate?.(item)
   }
 
+  const goNotifications = () => {
+    closeNoti()
+    const item = (MENUS[module] || []).find((it) => it.key === 'notifications')
+    if (item) handleNavigate(item)
+  }
+
   return (
     <div className={`ute-app ${collapsed ? 'ute-app--collapsed' : ''}`} data-module={module}>
       <Sidebar
@@ -64,10 +99,10 @@ export default function MainLayout({
       <Topbar
         module={module}
         user={user}
-        unreadNotifications={unreadNotifications}
+        unreadNotifications={typeof unread === 'number' && unread > 0 ? unread : undefined}
         unreadMessages={unreadMessages}
         onLogoClick={() => handleNavigate({ key: 'home' })}
-        onNotifications={onNotifications}
+        onNotifications={toggleNoti}
         onMessages={onMessages}
         onProfile={onProfile}
         onLogout={onLogout}
@@ -79,6 +114,9 @@ export default function MainLayout({
           {rightPanel && <aside className="ute-right">{rightPanel}</aside>}
         </div>
       </main>
+
+      {notiOpen && <NotificationDropdown onClose={closeNoti} onSeeMore={goNotifications} />}
+      {notiDetail && <NotificationDetailModal notification={notiDetail} onClose={() => dispatch(closeNotificationDetail())} />}
     </div>
   )
 }
