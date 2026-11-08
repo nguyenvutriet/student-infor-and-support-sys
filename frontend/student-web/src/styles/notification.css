@@ -1,12 +1,7 @@
-/* =====================================================================
- *  THÔNG BÁO CÁ NHÂN – dùng chung cho student / staff / admin
- *  Dùng lại biến màu & lớp của forum.css (.fm-page, .fm-card, .fm-btn, .fm-state, ForumModal)
- *  Tiền tố lớp: nt-
- * ===================================================================== */
+
 
 .nt-card { padding: 20px; display: flex; flex-direction: column; gap: 14px; }
 
-/* ---------- Thanh tìm kiếm ---------- */
 .nt-search {
   display: flex; align-items: center; gap: 10px; height: 46px; padding: 0 14px;
   background: #fff; border: 1px solid var(--border); border-radius: 8px; color: var(--text-2);
@@ -19,7 +14,6 @@
 .nt-meta { display: flex; align-items: center; gap: 8px; font-size: 14px; color: var(--text-2); }
 .nt-meta strong { color: var(--primary); }
 
-/* ---------- Bảng thông báo ---------- */
 .nt-tablewrap { border-radius: 8px; overflow: hidden; border: 1px solid var(--border); transition: opacity .15s; }
 .nt-tablewrap--busy { opacity: .55; pointer-events: none; }
 .nt-table { width: 100%; border-collapse: collapse; table-layout: fixed; }
@@ -34,7 +28,6 @@
 .nt-row:hover { background: var(--hover); }
 .nt-row:focus-visible { outline: 2px solid var(--primary); outline-offset: -2px; }
 
-/* Chưa đọc: nền xanh nhạt + chữ đậm + chấm xanh */
 .nt-row--unread, .nt-row--unread:nth-child(even) { background: var(--primary-soft); }
 .nt-row--unread:hover { background: var(--primary-soft); filter: brightness(.97); }
 .nt-row--unread .nt-title { font-weight: 800; }
@@ -50,6 +43,7 @@
   flex: none; width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center;
   background: var(--k-bg, #e9ecef); color: var(--k-fg, #3d4650);
 }
+.nt-ico--md { width: 46px; height: 46px; }
 .nt-ico--lg { width: 52px; height: 52px; }
 .nt-dot { flex: none; width: 10px; height: 10px; border-radius: 50%; background: var(--primary); }
 .nt-dot--static { display: inline-block; }
@@ -62,14 +56,12 @@ td.nt-col-time span { display: block; line-height: 1.45; }
 
 .nt-state { padding: 40px 16px; }
 
-/* ---------- Phân trang ---------- */
 .nt-pager { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
 .nt-pager__info { font-size: 13.5px; color: var(--text-2); }
 .nt-pager__btns { display: flex; align-items: center; gap: 10px; }
 .nt-pager__page { font-size: 14px; color: var(--text); font-weight: 600; }
 .nt-pager .fm-btn:disabled { opacity: .5; cursor: default; }
 
-/* ---------- Popup chi tiết ---------- */
 .nt-detail { padding: 18px 20px 22px; display: flex; flex-direction: column; gap: 16px; }
 .nt-detail__head { display: flex; align-items: center; gap: 14px; }
 .nt-detail__info { min-width: 0; display: flex; flex-direction: column; gap: 6px; }
@@ -82,7 +74,6 @@ td.nt-col-time span { display: block; line-height: 1.45; }
   font-size: 15px; line-height: 1.6; color: var(--text); white-space: pre-wrap; word-break: break-word;
 }
 
-/* ---------- Màn hình hẹp ---------- */
 @media (max-width: 900px) {
   .nt-col-kind { display: none; }
   .nt-col-time { width: 110px; }
@@ -93,3 +84,34 @@ td.nt-col-time span { display: block; line-height: 1.45; }
   .nt-col-time { width: 92px; }
   .nt-pager { justify-content: center; }
 }
+
+.nt-pop {
+  position: fixed; top: calc(var(--topbar-h, 64px) + 6px); right: 16px; z-index: 80;
+  width: min(420px, calc(100vw - 24px)); max-height: calc(100vh - var(--topbar-h, 64px) - 24px);
+  display: flex; flex-direction: column; background: #fff; border-radius: 10px; border: 1px solid var(--border);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, .22); animation: fm-pop .12s ease-out;
+}
+.nt-pop__title { margin: 0; padding: 18px 20px 12px; font-family: inherit; font-size: 20px; font-weight: 700; color: var(--text); }
+.nt-pop__body { flex: 1; min-height: 0; overflow-y: auto; }
+.nt-pop__list { list-style: none; margin: 0; padding: 0; }
+.nt-pop__list li + li .nt-pop__item { border-top: 1px solid var(--border); }
+.nt-pop__item {
+  width: 100%; display: flex; align-items: flex-start; gap: 14px; padding: 14px 20px; border: 0; background: none;
+  text-align: left; font-family: inherit; color: var(--text); cursor: pointer;
+}
+.nt-pop__item:hover { background: var(--hover); }
+.nt-pop__item--unread, .nt-pop__item--unread:hover { background: var(--primary-soft); }
+.nt-pop__text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.nt-pop__text strong { font-size: 14.5px; font-weight: 700; }
+.nt-pop__content {
+  font-size: 14px; line-height: 1.45; color: var(--text-2);
+  display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; word-break: break-word;
+}
+.nt-pop__item--unread .nt-pop__content { color: var(--text); }
+.nt-pop__text time { font-size: 12.5px; color: var(--primary); font-weight: 600; }
+.nt-pop__item .nt-dot { margin-top: 6px; }
+.nt-pop__state { padding: 30px 20px; display: flex; flex-direction: column; align-items: center; gap: 10px; text-align: center; color: var(--text-2); }
+.nt-pop__state p { margin: 0; }
+.nt-pop__state--err { color: var(--red); }
+.nt-pop__foot { border-top: 1px solid var(--border); padding: 12px; text-align: center; }
+.nt-pop__more { border: 0; background: none; font-family: inherit; font-size: 14.5px; font-weight: 700; color: var(--primary); text-decoration: underline; cursor: pointer; padding: 4px 12px; }

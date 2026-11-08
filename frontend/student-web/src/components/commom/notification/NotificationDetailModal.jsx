@@ -1,6 +1,8 @@
 import ForumModal from '../forum/ForumModal'
 import { TypeIcon } from './NotificationIcons'
 import { splitDateTime, typeMeta } from './notificationUtils'
+import '../../../styles/forum.css'
+import '../../../styles/notification.css'
 
 export default function NotificationDetailModal({ notification, onClose }) {
   const m = typeMeta(notification.type)

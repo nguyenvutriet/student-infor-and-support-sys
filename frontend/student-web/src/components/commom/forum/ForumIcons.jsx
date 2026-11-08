@@ -1,7 +1,11 @@
+// Bộ icon riêng của Diễn đàn (SVG tự chứa, không phụ thuộc Icon.jsx), kiểu Facebook:
+//  - icon màu (Ảnh/Video, GIF, Tệp) cho thanh "Thêm vào bài viết của bạn"
+//  - icon nét (Thích, Bình luận, Lưu, Báo cáo, ...) lấy màu theo chữ (currentColor)
 
 const svgProps = (size) => ({ width: size, height: size, viewBox: '0 0 24 24', 'aria-hidden': true, focusable: false })
 const stroke = { fill: 'none', stroke: 'currentColor', strokeWidth: 2, strokeLinecap: 'round', strokeLinejoin: 'round' }
 
+/** Ảnh / Video – xanh lá */
 export function PhotoVideoIcon({ size = 26 }) {
   return (
     <svg {...svgProps(size)}>
@@ -12,6 +16,7 @@ export function PhotoVideoIcon({ size = 26 }) {
   )
 }
 
+/** Ảnh GIF – xanh ngọc */
 export function GifIcon({ size = 26 }) {
   return (
     <svg {...svgProps(size)}>
@@ -21,6 +26,7 @@ export function GifIcon({ size = 26 }) {
   )
 }
 
+/** Tệp đính kèm – vàng cam */
 export function FileAttachIcon({ size = 26 }) {
   return (
     <svg {...svgProps(size)}>
@@ -31,6 +37,7 @@ export function FileAttachIcon({ size = 26 }) {
   )
 }
 
+/** Thích (ngón cái) */
 export function LikeIcon({ size = 20, filled = false }) {
   return (
     <svg {...svgProps(size)} {...stroke} fill={filled ? 'currentColor' : 'none'}>
@@ -40,6 +47,7 @@ export function LikeIcon({ size = 20, filled = false }) {
   )
 }
 
+/** Bình luận (bong bóng tròn) */
 export function CommentIcon({ size = 20 }) {
   return (
     <svg {...svgProps(size)} {...stroke}>
@@ -48,6 +56,7 @@ export function CommentIcon({ size = 20 }) {
   )
 }
 
+/** Lưu bài viết (dấu trang) */
 export function BookmarkIcon({ size = 20, filled = false }) {
   return (
     <svg {...svgProps(size)} {...stroke} fill={filled ? 'currentColor' : 'none'}>
@@ -56,6 +65,7 @@ export function BookmarkIcon({ size = 20, filled = false }) {
   )
 }
 
+/** Báo cáo (bong bóng có dấu chấm than) */
 export function ReportIcon({ size = 20 }) {
   return (
     <svg {...svgProps(size)} {...stroke}>
@@ -65,6 +75,7 @@ export function ReportIcon({ size = 20 }) {
   )
 }
 
+/** Nút "..." (ba chấm ngang) */
 export function MoreIcon({ size = 22 }) {
   return (
     <svg {...svgProps(size)} fill="currentColor">
@@ -75,6 +86,7 @@ export function MoreIcon({ size = 22 }) {
   )
 }
 
+/** Tải xuống */
 export function DownloadIcon({ size = 20 }) {
   return (
     <svg {...svgProps(size)} {...stroke}>
@@ -85,6 +97,7 @@ export function DownloadIcon({ size = 20 }) {
   )
 }
 
+/** Đóng (X) */
 export function CloseIcon({ size = 22 }) {
   return (
     <svg {...svgProps(size)} {...stroke}>
@@ -93,10 +106,22 @@ export function CloseIcon({ size = 22 }) {
   )
 }
 
+/** Mũi tên trái / phải */
 export function ChevronIcon({ dir = 'right', size = 24 }) {
   return (
     <svg {...svgProps(size)} {...stroke}>
       <path d={dir === 'left' ? 'M15 18l-6-6 6-6' : 'M9 18l6-6-6-6'} />
+    </svg>
+  )
+}
+
+/** Tải lại / Thử lại (hai mũi tên xoay vòng). spinning = true → icon quay (đang tải) */
+export function RefreshIcon({ size = 18, spinning = false }) {
+  return (
+    <svg {...svgProps(size)} {...stroke} className={spinning ? 'fm-spin' : undefined}>
+      <path d="M23 4v6h-6" />
+      <path d="M1 20v-6h6" />
+      <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
     </svg>
   )
 }

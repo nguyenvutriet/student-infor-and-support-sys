@@ -2,13 +2,16 @@ import api from "../../api/api";
 import { getUserRole, ROLE_HOME } from "../../utils/roles";
 import { clearUser, saveUser } from "../../utils/authStorage";
 import { FORUM_FEATURES, normalizeComment, normalizePost, normalizePostPage } from "../../components/commom/forum/forumUtils";
-   import { normalizeNotificationPage } from "../../components/commom/notification/notificationUtils";
+import {  normalizeNotificationPage } from "../../components/commom/notification/notificationUtils";
+
 
 const FORUM_PAGE_SIZE = 10;
 const apiMessage = (error, fallback) => error?.response?.data?.message || fallback;
 const isNotFound = (error) =>
     error?.response?.status === 404 || /không tồn tại|đã bị xóa/i.test(error?.response?.data?.message || "");
 const currentUserId = (getState) => getState().auth?.user?.userId;
+
+const NOTI_PAGE_SIZE = 10;
 
 export const authUser = (sendData, toast, navigate, setLoader, onLocked) => async (dispatch) => {
 
@@ -100,10 +103,12 @@ export const loadOAuthUser = (toast, navigate) => async (dispatch) => {
     }
 }
 
+
+
 export const fetchForumPosts = (keyword = "", page = 0) => async (dispatch, getState) => {
     dispatch({ type: "FORUM_FEED_REQUEST", payload: { keyword, page } });
     try {
-        const params = { pageNumber: page, pageSize: FORUM_PAGE_SIZE, sortBy: "desc" }; 
+        const params = { pageNumber: page, pageSize: FORUM_PAGE_SIZE, sortBy: "desc" };
         if (keyword) params.keyword = keyword;
         const { data } = await api.get("/forum/posts", { params });
         dispatch({ type: "FORUM_FEED_SUCCESS", payload: { ...normalizePostPage(data, currentUserId(getState)), keyword, page } });
@@ -134,7 +139,7 @@ export const createForumPost = ({ title, content, files = [], onProgress }, toas
             body.append("content", content);
             files.forEach((f) => body.append("files", f));
             config = {
-                timeout: 0, 
+                timeout: 0,
                 onUploadProgress: (e) => e.total && onProgress?.(Math.round((e.loaded * 100) / e.total)),
             };
         }
@@ -195,7 +200,7 @@ export const toggleSaveForumPost = (post, toast) => async (dispatch) => {
         toast.success(willSave ? "Đã lưu bài viết" : "Đã bỏ lưu bài viết");
     } catch (error) {
         dispatch({ type: "FORUM_POST_PATCH", payload: { postId: post.postId, patch: { saved: !willSave } } });
-        if (!willSave) dispatch(fetchSavedForumPosts(0));
+        if (!willSave) dispatch(fetchSavedForumPosts(0)); 
         if (isNotFound(error)) {
             toast.error("Bài viết không tồn tại hoặc đã bị xóa");
             dispatch(removeForumPost(post.postId));
@@ -246,8 +251,6 @@ export const reportForumContent = (payload, toast) => async () => {
     }
 };
 
-const NOTI_PAGE_SIZE = 10;
-
 export const fetchNotifications = (keyword = "", page = 0) => async (dispatch) => {
     dispatch({ type: "NOTI_LIST_REQUEST", payload: { keyword, page } });
     try {
@@ -257,7 +260,18 @@ export const fetchNotifications = (keyword = "", page = 0) => async (dispatch) =
         dispatch({ type: "NOTI_LIST_SUCCESS", payload: normalizeNotificationPage(data) });
     } catch (error) {
         console.error("Notification list error:", error);
-        dispatch({ type: "NOTI_LIST_FAILURE", payload: { message: "Không thể tải thông báo" } }); 
+        dispatch({ type: "NOTI_LIST_FAILURE", payload: { message: "Không thể tải thông báo" } }); // UC5 Exc 2.3
+    }
+};
+
+export const fetchRecentNotifications = () => async (dispatch) => {
+    dispatch({ type: "NOTI_RECENT_REQUEST" });
+    try {
+        const { data } = await api.get("/notifications", { params: { pageNumber: 0, pageSize: 5 } });
+        dispatch({ type: "NOTI_RECENT_SUCCESS", payload: normalizeNotificationPage(data) });
+    } catch (error) {
+        console.error("Recent notifications error:", error);
+        dispatch({ type: "NOTI_RECENT_FAILURE", payload: { message: "Không thể tải thông báo" } });
     }
 };
 
