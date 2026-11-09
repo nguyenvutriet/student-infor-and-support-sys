@@ -28,6 +28,7 @@ public class PostServiceImpl implements PostService {
     private final SavedPostRepo savedPostRepo;
     private final CommentRepo commentRepo;
     private final CloudinaryService cloudinaryService;
+    private final NotificationService notificationService;
 
     private static final int MAX_TITLE = 200;
     private static final int MAX_CONTENT = 5000;
@@ -79,18 +80,15 @@ public class PostServiceImpl implements PostService {
             String userId
     ) {
 
-        // Sắp xếp bài viết
         Sort sort = "asc".equalsIgnoreCase(sortBy)
                 ? Sort.by("createAt").ascending()
                 : Sort.by("createAt").descending();
 
         Pageable pageable = PageRequest.of(pageNumber, pageSize, sort);
 
-        // Chỉ lấy bài viết có trạng thái HIDDEN
         Specification<ForumPost> spec =
                 (root, q, cb) -> cb.equal(root.get("status"), ViewStatus.HIDDEN);
 
-        // Tìm kiếm theo tiêu đề
         if (keyword != null && !keyword.isBlank()) {
             String kw = "%" + keyword.trim().toLowerCase() + "%";
 
@@ -99,16 +97,13 @@ public class PostServiceImpl implements PostService {
             );
         }
 
-        // Truy vấn database
         Page<ForumPost> postPage = forumPostRepo.findAll(spec, pageable);
 
-        // Chuyển đổi sang PostDTO
         List<PostDTO> postDTOs = postPage.getContent()
                 .stream()
                 .map(post -> toDTO(post, userId))
                 .toList();
 
-        // Tạo response
         PostResponse response = new PostResponse();
         response.setContent(postDTOs);
         response.setPageNumber(postPage.getNumber());
@@ -333,8 +328,10 @@ public class PostServiceImpl implements PostService {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Bình luận cha không thuộc bài viết này");
             }
             comment.setParentComment(rootOf(parent));
+            notificationService.send(comment.getParentComment().getUser().getUserId(), NotificationType.NEW_COMMENT_REPLY, "Bình luận của bạn có phản hồi mới từ " + user.getFullName());
         }
 
+        notificationService.send(post.getAuthor().getUserId(), NotificationType.NEW_COMMENT, "Bài viết của bạn có bình luận mới từ " + user.getFullName());
         return toCommentDTO(commentRepo.save(comment), List.of());
     }
 

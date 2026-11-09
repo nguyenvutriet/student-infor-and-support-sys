@@ -19,6 +19,7 @@ public class ReportServiceImpl implements ReportService{
     private final StaffRepo staffRepo;
     private final ReportRepo reportRepo;
     private final CommentRepo commentRepo;
+    private final NotificationService notificationService;
 
 
     @Override
@@ -75,7 +76,7 @@ public class ReportServiceImpl implements ReportService{
 
         ReportResponse response = new ReportResponse();
         response.setReportId(report.getReportId());
-
+        notificationService.send(userId, NotificationType.REPORT_SUBMITTED_CONFIRMATION, "Báo cáo của bạn đã được gửi thành công. Chúng tôi sẽ xem xét và xử lý trong thời gian sớm nhất.");
         return response;
     }
 }

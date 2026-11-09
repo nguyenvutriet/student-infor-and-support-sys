@@ -22,6 +22,7 @@ public class DocumentService {
     private final DepartmentRepo departmentRepo;
     private final AuthUtil authUtil;
     private final CloudinaryService cloudinaryService;
+    private final NotificationService notificationService;
 
     public List<Map<String, String>> departments() {
         requireStudent();
@@ -81,6 +82,7 @@ public class DocumentService {
             Document saved = documentRepo.save(d);
             applyRelations(saved, req.relations(), staff.getDepartment().getDepartmentId());
             saved = documentRepo.save(saved);
+            notificationService.send(staff.getUserId(), NotificationType.NEW_DOCUMENT, "Ban vừa đăng tải một văn bản mới: " + saved.getTitle());
             return toResponse(saved);
         } catch (RuntimeException e) {
             uploaded.forEach(this::safeDelete);

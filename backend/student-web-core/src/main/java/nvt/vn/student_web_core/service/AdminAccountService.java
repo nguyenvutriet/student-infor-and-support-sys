@@ -1,11 +1,6 @@
 package nvt.vn.student_web_core.service;
 
-import nvt.vn.student_web_core.model.User;
-import nvt.vn.student_web_core.model.Student;
-import nvt.vn.student_web_core.model.Staff;
-import nvt.vn.student_web_core.model.Admin;
-import nvt.vn.student_web_core.model.Role;
-import nvt.vn.student_web_core.model.AccountStatus;
+import nvt.vn.student_web_core.model.*;
 import nvt.vn.student_web_core.payload.admin.AdminAccountCreateRequest;
 import nvt.vn.student_web_core.payload.admin.AdminAccountResponse;
 import nvt.vn.student_web_core.payload.admin.AdminAccountUpdateRequest;
@@ -24,10 +19,12 @@ import java.util.Locale;
 public class AdminAccountService {
     private final UserRepo userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final NotificationService notificationService;
 
-    public AdminAccountService(UserRepo userRepository, PasswordEncoder passwordEncoder) {
+    public AdminAccountService(UserRepo userRepository, PasswordEncoder passwordEncoder, NotificationService notificationService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.notificationService = notificationService;
     }
 
     @Transactional(readOnly = true)
@@ -80,6 +77,11 @@ public class AdminAccountService {
     public AdminAccountResponse changeStatus(String userId, String rawStatus) {
         User user = find(userId);
         user.setStatus(parseStatus(rawStatus));
+        if(user.getStatus() == AccountStatus.ACTIVE){
+            notificationService.send(userId, NotificationType.ACCOUNT_UNLOCKED, "Tài khoản của bạn đã được mở khóa. Bạn có thể đăng nhập và sử dụng hệ thống.");
+        }else{
+            notificationService.send(userId, NotificationType.ACCOUNT_LOCKED, "Tài khoản của bạn đã bị khóa. Bạn không thể đăng nhập và sử dụng hệ thống.");
+        }
         return toResponse(userRepository.save(user));
     }
 

@@ -1,15 +1,12 @@
 package nvt.vn.student_web_core.controller.admin;
 
-import nvt.vn.student_web_core.model.Report;
+import nvt.vn.student_web_core.model.*;
 import nvt.vn.student_web_core.repository.ReportRepo;
-import nvt.vn.student_web_core.model.Comment;
-import nvt.vn.student_web_core.model.ForumPost;
 import jakarta.validation.Valid;
-import nvt.vn.student_web_core.model.Admin;
-import nvt.vn.student_web_core.model.ViewStatus;
 import nvt.vn.student_web_core.payload.admin.ResolveReportRequest;
 import nvt.vn.student_web_core.repository.AdminRepo;
 
+import nvt.vn.student_web_core.service.NotificationService;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.http.HttpStatus;
@@ -60,6 +57,8 @@ public class AdminController {
     private final PostService postService;
 
     private final AuthUtil authUtil;
+
+    private final NotificationService notificationService;
 
     @GetMapping("/reports")
     @Transactional(readOnly = true)
@@ -214,6 +213,13 @@ public class AdminController {
                 comment.setActive(false);
                 commentRepo.save(comment);
             }
+            if(report.getStaff() != null) {
+                notificationService.send(report.getStaff().getUserId(), NotificationType.REPORT_RESOLVED_VIOLATION, "Báo cáo của bạn đã được xử lý. Nội dung vi phạm đã bị ẩn.");
+            }else{
+                notificationService.send(report.getStudent().getUserId(), NotificationType.REPORT_RESOLVED_VIOLATION, "Báo cáo của bạn đã được xử lý. Nội dung vi phạm đã bị ẩn.");
+            }
+        }else{
+            notificationService.send(report.getStudent().getUserId() != null ? report.getStudent().getUserId() : report.getStaff().getUserId(), NotificationType.REPORT_RESOLVED_NO_VIOLATION, "Báo cáo của bạn đã được xử lý. Nội dung không vi phạm.");
         }
 
         // Cập nhật riêng báo cáo đang được xử lý
@@ -253,7 +259,7 @@ public class AdminController {
 
         post.setStatus(ViewStatus.HIDDEN);
         forumPostRepo.save(post);
-
+        notificationService.send(post.getAuthor().getUserId(), NotificationType.POST_HIDDEN, "Bài viết của bạn đã bị ẩn do vi phạm nội quy.");
         return ResponseEntity.ok(
                 Map.of("message", "Ẩn bài viết thành công.")
         );
