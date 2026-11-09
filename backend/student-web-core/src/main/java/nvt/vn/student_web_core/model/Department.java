@@ -19,6 +19,7 @@ public class Department {
     private String email;
     private String phone;
     private String location;
+    private String logoUrl;
 
     @OneToOne(mappedBy = "department",
         fetch = FetchType.LAZY,
