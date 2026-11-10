@@ -19,6 +19,9 @@ import ForumPage from "./components/commom/forum/ForumPage.jsx";
 import { useSelector } from "react-redux";
 import ChatPage from "./components/chat/ChatPage";
 import NotificationPage from "./components/commom/notification/NotificationPage";
+import StudyCorner from "./components/student/study/StudyCorner";
+import DepartmentPage from "./components/student/study/DepartmentPage";
+import ResourceDetailPage from "./components/student/study/ResourceDetailPage";
 
 function AdminDashboard() {
     return (
@@ -118,6 +121,10 @@ function App() {
                         <Route path="/student/messages" element={<ChatPage key="messages" />} />
                         <Route path="/student/forum" element={<ForumPage />} />
                         <Route path="/student/notifications" element={<NotificationPage />} />
+                        <Route path="/student/study" element={<StudyCorner initialTab="resources" />} />
+                        <Route path="/student/study/departments/:departmentId" element={<DepartmentPage />} />
+                        <Route path="/student/study/resources/:resourceId" element={<ResourceDetailPage />} />
+                        <Route path="/student/schedule" element={<StudyCorner initialTab="schedule" />} />
                         </Route>
                     </Route>
 
