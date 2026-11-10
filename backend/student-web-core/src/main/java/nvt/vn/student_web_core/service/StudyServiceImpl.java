@@ -1,10 +1,8 @@
 package nvt.vn.student_web_core.service;
 
 import lombok.RequiredArgsConstructor;
-import nvt.vn.student_web_core.model.Department;
-import nvt.vn.student_web_core.model.ResourceType;
-import nvt.vn.student_web_core.model.StudyResource;
-import nvt.vn.student_web_core.model.ViewStatus;
+import nvt.vn.student_web_core.handler.ResourceNotFoundException;
+import nvt.vn.student_web_core.model.*;
 import nvt.vn.student_web_core.payload.student.ResourceSearchResponse;
 import nvt.vn.student_web_core.payload.student.StudyFileResponse;
 import nvt.vn.student_web_core.payload.student.StudyResourceDetailResponse;
@@ -107,7 +105,39 @@ public class StudyServiceImpl implements StudyService{
 
     @Override
     public StudyResourceDetailResponse getResourceDetail(Integer resourceId) {
-        return null;
+
+        StudyResource  resource = studyResourceRepo.findById(resourceId).orElseThrow(
+                () -> new ResourceNotFoundException("Không tìm thấy tài liệu" + resourceId)
+        );
+
+        if(resource.getStatus() == ViewStatus.HIDDEN) {
+            throw new ResourceNotFoundException("Tài liệu không tồn tại");
+        }
+
+        List<FileAttachment> files = resource.getFiles();
+        List<StudyFileResponse> fileResponses = files.stream()
+                .map(
+                        file -> {
+                            StudyFileResponse fileResponse = new StudyFileResponse();
+                            fileResponse.setFileId(file.getFileId());
+                            fileResponse.setFileName(file.getFileName());
+                            fileResponse.setFileType(file.getFileType());
+                            fileResponse.setFileSize(file.getFileSize());
+                            fileResponse.setFileUrl(file.getFileUrl());
+                            return fileResponse;
+                        }
+                ).toList();
+
+        StudyResourceDetailResponse response = new StudyResourceDetailResponse();
+        response.setResourceId(resource.getResourceId());
+        response.setTitle(resource.getTitle());
+        response.setDescription(resource.getDescription());
+        response.setCreateAt(resource.getCreateAt());
+        response.setDepartmentId(resource.getStaff().getDepartment().getDepartmentId());
+        response.setDepartmentName(resource.getStaff().getDepartment().getName());
+        response.setFiles(fileResponses);
+
+        return response;
     }
 
     private StudyResourceSummaryResponse toSummary(StudyResource r) {

@@ -55,6 +55,10 @@ public class DepartmentServiceImpl implements DepartmentService{
                 () -> new ResourceNotFoundException("Không tìm thấy phòng bang")
         );
 
+        if(department.getHeadOfDepartment() == null){
+            throw new ResourceNotFoundException("Khoa/viện chưa có người phụ trách");
+        }
+
         List<StudyResourceSummaryResponse> resources = department.getHeadOfDepartment().getStudyResources().stream()
                 .sorted(Comparator.comparing(
                         StudyResource::getCreateAt

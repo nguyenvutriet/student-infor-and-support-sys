@@ -15,6 +15,8 @@ public class Department {
     private String departmentId;
 
     private String name;
+
+    @Column(columnDefinition = "TEXT")
     private String description;
     private String email;
     private String phone;

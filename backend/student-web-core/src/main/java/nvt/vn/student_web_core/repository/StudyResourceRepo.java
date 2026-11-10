@@ -29,7 +29,7 @@ public interface StudyResourceRepo extends JpaRepository<StudyResource, Integer>
         AND (:kw = '' OR LOWER(r.title) LIKE LOWER(CONCAT('%', :kw, '%'))
                       OR LOWER(r.description) LIKE LOWER(CONCAT('%', :kw, '%')))
       ORDER BY r.createAt DESC""")
-    Collection<Object> search(ViewStatus viewStatus, String departmentId, ResourceType type, String kw, Integer yearFilter);
+    Collection<Object> search(@Param("visible") ViewStatus viewStatus,@Param("deptId") String departmentId,@Param("type") ResourceType type,@Param("kw") String kw,@Param(("year")) Integer yearFilter);
 
     @Query("""
       SELECT DISTINCT FUNCTION('YEAR', r.createAt) FROM StudyResource r
@@ -37,5 +37,5 @@ public interface StudyResourceRepo extends JpaRepository<StudyResource, Integer>
         AND r.staff.department.departmentId = :deptId
         AND r.resourceType = :type
       ORDER BY 1 DESC""")
-    List<Integer> findYears(ViewStatus viewStatus, String departmentId, ResourceType type);
+    List<Integer> findYears(@Param("visible") ViewStatus viewStatus,@Param("deptId") String departmentId,@Param("type") ResourceType type);
 }

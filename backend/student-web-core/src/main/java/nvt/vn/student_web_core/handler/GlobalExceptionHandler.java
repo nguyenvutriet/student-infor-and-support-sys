@@ -1,5 +1,6 @@
 package nvt.vn.student_web_core.handler;
 
+import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -7,6 +8,7 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -41,6 +43,21 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<Map<String,String>> notFound(ResourceNotFoundException e) {
         return ResponseEntity.status(404).body(Map.of("message", e.getMessage()));
+    }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<Map<String,String>> illegalArgument(IllegalArgumentException e) {
+        return ResponseEntity.status(400).body(Map.of("message", e.getMessage()));
+    }
+
+    @ExceptionHandler(NullPointerException.class)
+    public ResponseEntity<Map<String,String>> nullPointer(NullPointerException e) {
+        return ResponseEntity.status(500).body(Map.of("message", e.getMessage()));
+    }
+
+    @ExceptionHandler(InvalidDataAccessApiUsageException.class)
+    public ResponseEntity<Map<String,String>> invalidDataAccess(InvalidDataAccessApiUsageException e) {
+        return ResponseEntity.status(400).body(Map.of("message", e.getMessage()));
     }
 
 }

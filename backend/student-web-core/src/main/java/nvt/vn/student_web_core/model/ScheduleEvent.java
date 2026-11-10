@@ -3,7 +3,7 @@ package nvt.vn.student_web_core.model;
 import jakarta.persistence.*;
 import lombok.Data;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 @Entity
 @Table(name = "schedule_events")
@@ -16,8 +16,8 @@ public class ScheduleEvent {
 
     private String title;
     private String subject;
-    private LocalDateTime startTime;
-    private LocalDateTime endTime;
+    private LocalDate startTime;
+    private LocalDate endTime;
     private String note;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
