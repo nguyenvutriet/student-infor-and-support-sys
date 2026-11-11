@@ -15,7 +15,6 @@ export const MENUS = {
   student: [
     { key: 'home', label: 'Trang chủ', icon: 'home', path: '/student' },
     { key: 'forum', label: 'Diễn đàn', icon: 'forum', path: '/student/forum' },
-    { key: 'saved', label: 'Bài viết đã lưu', icon: 'bookmark', path: '/student/saved' },
     { group: 'Hỗ trợ' },
     { key: 'notifications', label: 'Thông báo cá nhân', icon: 'bell', path: '/student/notifications' },
     { key: 'requests', label: 'Yêu cầu hỗ trợ', icon: 'inbox', path: '/student/requests' },
@@ -23,7 +22,6 @@ export const MENUS = {
     { group: 'Học tập' },
     { key: 'study', label: 'Góc học tập', icon: 'book', path: '/student/study' },
     { key: 'documents', label: 'Văn bản', icon: 'file', path: '/student/documents' },
-    { key: 'schedule', label: 'Thời khóa biểu', icon: 'calendar', path: '/student/schedule' },
   ],
   staff: [
     { key: 'dashboard', label: 'Tổng quan', icon: 'dashboard', path: '/staff' },
