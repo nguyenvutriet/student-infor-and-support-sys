@@ -1,0 +1,49 @@
+/* ===== Thống kê nhân viên ===== */
+.ss { display: flex; flex-direction: column; gap: 16px; }
+.ss-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+.ss-head h1 { font-size: 24px; color: var(--primary-dark); }
+.ss-head p { margin-top: 4px; color: var(--text-2); }
+.ss-range { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.ss-seg { display: inline-flex; padding: 3px; border: 1px solid var(--border); border-radius: 12px; background: #fff; }
+.ss-seg button { height: 34px; padding: 0 14px; border: 0; border-radius: 9px; background: transparent; color: var(--text-2); font-weight: 600; }
+.ss-seg button.is-active { background: var(--primary); color: #fff; }
+.ss-dates { display: flex; align-items: center; gap: 8px; color: var(--text-2); }
+.ss-dates input { height: 38px; padding: 0 10px; border: 1px solid var(--border); border-radius: 10px; font: inherit; background: #fff; }
+.ss-dates input:focus { outline: 0; border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-soft); }
+
+.ss-tabs { display: flex; gap: 6px; border-bottom: 1px solid var(--border); overflow-x: auto; }
+.ss-tabs button { padding: 10px 18px; border: 0; border-bottom: 3px solid transparent; background: transparent; color: var(--text-2); font-weight: 700; white-space: nowrap; }
+.ss-tabs button.is-active { color: var(--primary-dark); border-bottom-color: var(--red); }
+
+.ss-notice { display: flex; align-items: center; justify-content: center; gap: 14px; padding: 36px 16px; border: 1px dashed var(--border); border-radius: 14px; background: #fff; color: var(--text-2); }
+.ss-notice--err { color: #b42318; background: #fdecec; border-color: #f5c2c0; }
+.ss-retry { height: 34px; padding: 0 14px; border: 0; border-radius: 9px; background: var(--primary); color: #fff; font-weight: 600; }
+.ss-body { display: flex; flex-direction: column; gap: 16px; transition: opacity .15s; }
+.ss-body.is-loading { opacity: .55; pointer-events: none; }
+
+.ss-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; }
+.ss-card { --tone: #1d5fc4; --bg: #e6f0ff; display: flex; flex-direction: column; gap: 4px; padding: 14px 16px; border: 1px solid var(--border); border-left: 4px solid var(--tone); border-radius: 12px; background: #fff; }
+.ss-card--amber { --tone: #b7791f; } .ss-card--green { --tone: #1b7a3a; } .ss-card--red { --tone: #b42318; }
+.ss-card--violet { --tone: #6b3fb5; } .ss-card--teal { --tone: #0f766e; } .ss-card--slate { --tone: #475569; }
+.ss-card__label { font-size: 13.5px; color: var(--text-2); font-weight: 600; }
+.ss-card__value { font-size: 28px; line-height: 1.1; color: var(--tone); }
+.ss-card__sub { font-size: 12.5px; color: var(--text-2); }
+
+.ss-empty { padding: 28px 12px; text-align: center; color: var(--text-2); border: 1px dashed var(--border); border-radius: 12px; background: #fff; }
+.ss-grid { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 3fr); gap: 14px; }
+.ss-grid--one { grid-template-columns: minmax(0, 1fr); }
+.ss-panel { min-width: 0; padding: 16px; border: 1px solid var(--border); border-radius: 14px; background: #fff; }
+.ss-panel h2 { margin-bottom: 12px; font-size: 16px; color: var(--primary-dark); }
+.ss-panel .ss-empty { border: 0; padding: 20px 8px; }
+.ss-chart { height: 270px; }
+.ss-chart--pie { height: 290px; }
+
+.ss-table-wrap { overflow-x: auto; }
+.ss-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+.ss-table th { padding: 10px 12px; text-align: left; background: #f3f6fa; color: var(--text-2); font-weight: 700; white-space: nowrap; }
+.ss-table td { padding: 10px 12px; border-top: 1px solid #eef0f3; vertical-align: top; }
+.ss-table tbody tr:hover { background: #f8fafc; }
+.ss-tag { display: inline-block; padding: 2px 10px; border-radius: 999px; background: #eceff4; color: var(--text-2); font-size: 12.5px; font-weight: 600; white-space: nowrap; }
+.ss-tag--on { background: #e2f6e8; color: #1b7a3a; }
+
+@media (max-width: 980px) { .ss-grid { grid-template-columns: minmax(0, 1fr); } }

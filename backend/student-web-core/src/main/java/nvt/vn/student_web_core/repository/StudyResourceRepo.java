@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
 
@@ -38,4 +39,22 @@ public interface StudyResourceRepo extends JpaRepository<StudyResource, Integer>
         AND r.resourceType = :type
       ORDER BY 1 DESC""")
     List<Integer> findYears(@Param("visible") ViewStatus viewStatus,@Param("deptId") String departmentId,@Param("type") ResourceType type);
+
+    @Query("""
+        SELECT r.resourceType, r.status, COUNT(r) FROM StudyResource r
+        WHERE r.staff.department.departmentId = :deptId
+        GROUP BY r.resourceType, r.status
+    """)
+    List<Object[]> countByDepartment(@Param("deptId") String deptId);
+
+    @Query("""
+        SELECT r FROM StudyResource r
+        WHERE r.staff.department.departmentId = :deptId AND r.createAt BETWEEN :from AND :to
+        ORDER BY r.createAt DESC
+    """)
+    List<StudyResource> findByDepartmentCreatedBetween(
+            @Param("deptId") String deptId,
+            @Param("from") LocalDateTime from,
+            @Param("to") LocalDateTime to
+    );
 }

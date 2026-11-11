@@ -54,4 +54,16 @@ public interface DocumentRepo extends JpaRepository<Document, Integer> {
     );
     boolean existsByDocNumberIgnoreCase(String docNumber);
     boolean existsByDocNumberIgnoreCaseAndDocIdNot(String docNumber, Integer docId);
+
+    @Query("SELECT d.status, COUNT(d) FROM Document d WHERE d.department.departmentId = :deptId GROUP BY d.status")
+    List<Object[]> countByStatusForDepartment(@Param("deptId") String deptId);
+
+    @Query("""
+        SELECT d FROM Document d
+        WHERE d.department.departmentId = :deptId AND d.createAt BETWEEN :from AND :to
+        ORDER BY d.createAt DESC
+    """)
+    List<Document> findByDepartmentCreatedBetween(@Param("deptId") String deptId,
+                                                  @Param("from") java.time.LocalDateTime from,
+                                                  @Param("to") java.time.LocalDateTime to);
 }

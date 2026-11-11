@@ -32,7 +32,7 @@ export const MENUS = {
     { group: 'Quản lý nội dung' },
     { key: 'documents', label: 'Quản lý văn bản', icon: 'file', path: '/staff/documents' },
     { key: 'study', label: 'Quản lý góc học tập', icon: 'book', path: '/staff/study' },
-    { key: 'statistical', label: 'Thống kê', icon: 'chart', path: '/staff/statistical' },
+    { key: 'statistical', label: 'Thống kê', icon: 'chart', path: '/staff/statistics' },
   ],
   admin: [
     { key: 'dashboard', label: 'Tổng quan', icon: 'dashboard', path: '/admin' },

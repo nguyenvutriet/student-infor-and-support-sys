@@ -14,6 +14,7 @@ import StaffDashboard from "./components/staff/StaffDashboard";
 import DocumentManagement from "./components/staff/DocumentManagement";
 import AppLayout from "./components/commom/AppLayout";
 import StudyManagement from "./components/staff/StudyManagement.jsx";
+import StaffStatistics from "./components/staff/StaffStatistics";
 
 import ForumPage from "./components/commom/forum/ForumPage.jsx";
 import { useSelector } from "react-redux";
@@ -22,6 +23,10 @@ import NotificationPage from "./components/commom/notification/NotificationPage"
 import StudyCorner from "./components/student/study/StudyCorner";
 import DepartmentPage from "./components/student/study/DepartmentPage";
 import ResourceDetailPage from "./components/student/study/ResourceDetailPage";
+
+
+
+
 
 function AdminDashboard() {
     return (
@@ -101,6 +106,7 @@ function App() {
                             <Route path="/staff/notifications" element={<NotificationPage />} />
                             <Route path="/staff/requests" element={<ChatPage key="requests" initialTab="REQUESTS" />} />
                             <Route path="/staff/messages" element={<ChatPage key="messages" initialTab="MESSAGES" />} />
+                            <Route path="/staff/statistics" element={<StaffStatistics />} />
                         </Route>
                     </Route>
 
