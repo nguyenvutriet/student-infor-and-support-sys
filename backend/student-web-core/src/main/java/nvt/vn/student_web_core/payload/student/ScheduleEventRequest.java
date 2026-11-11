@@ -4,7 +4,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 @Data
 public class ScheduleEventRequest {
@@ -14,10 +14,10 @@ public class ScheduleEventRequest {
     private String subject;
 
     @NotNull
-    private LocalDateTime startTime;
+    private LocalDate startTime;
 
     @NotNull
-    private LocalDateTime endTime;
+    private LocalDate endTime;
     private String note;
 
 
