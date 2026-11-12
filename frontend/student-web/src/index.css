@@ -1,4 +1,21 @@
+@layer theme, base, components, utilities;
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/utilities.css" layer(utilities);
+
+@theme static {
+  --color-auth-title: #3f51a3;
+  --color-auth-btn: #00538f;
+  --color-auth-btn-hover: #004273;
+  --color-auth-field: #e8effc;
+  --color-auth-field-border: #c5cfe3;
+  --color-auth-muted: #6b7a99;
+  --color-auth-error: #d32f2f;
+  --color-auth-line: #e3e7ef;
+  --color-auth-ok: #2e7d32;
+}
+
 /* Global base – thay thế index.css mặc định của Vite. Bảng màu lấy theo online.hcmute.edu.vn */
+@layer base {
 :root {
   --bg: #f0f2f5;
   --surface: #ffffff;
@@ -39,3 +56,4 @@ body {
 button { font: inherit; color: inherit; cursor: pointer; }
 a { color: var(--link); text-decoration: none; }
 h1, h2, h3, p { margin: 0; }
+}

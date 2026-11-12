@@ -77,6 +77,7 @@ public class WebSecurityConfig {
                         .requestMatchers("/h2-console/**").permitAll()
                         .requestMatchers("/actuator/**").permitAll()
                         .requestMatchers("/oauth2/**").permitAll()
+                        .requestMatchers("/api/auth/forgot-password").hasAnyRole("USER", "ADMIN", "STUDENT")
                         .requestMatchers("/login/oauth2/**").permitAll()
 
                         .requestMatchers("/api/student/**").hasRole("STUDENT")
