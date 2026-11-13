@@ -5,6 +5,7 @@ import { forumReducer } from "./reducer/forumReducer";
 import { notificationReducer } from "./reducer/notificationReducer";
 import { studyReducer } from "./reducer/studyReducer";
 import { scheduleReducer } from "./reducer/scheduleReducer";
+import { forgotPasswordReducer } from "./reducer/forgotPasswordReducer";
 
 const savedUser = loadUser();
 
@@ -21,7 +22,8 @@ export const store = configureStore({
         forum: forumReducer,
         notification: notificationReducer,
         study: studyReducer,
-        schedule: scheduleReducer
+        schedule: scheduleReducer,
+        forgotPassword: forgotPasswordReducer
     },
     preloadedState: initialState
 });

@@ -3,6 +3,7 @@ import { getUserRole, ROLE_HOME } from "../../utils/roles";
 import { clearUser, saveUser } from "../../utils/authStorage";
 import { FORUM_FEATURES, normalizeComment, normalizePost, normalizePostPage } from "../../components/commom/forum/forumUtils";
 import {  normalizeNotificationPage } from "../../components/commom/notification/notificationUtils";
+import { parseForgotError, toOtpMeta } from "../../utils/forgotPasswordUtils";
 
 
 const FORUM_PAGE_SIZE = 10;
@@ -12,6 +13,15 @@ const isNotFound = (error) =>
 const currentUserId = (getState) => getState().auth?.user?.userId;
 
 const NOTI_PAGE_SIZE = 10;
+
+const BASE = "/auth/forgot-password";
+export const setForgotStep = (step) => ({ type: "FORGOT_STEP_SET", payload: step });
+export const setForgotErrors = (scope, errors) => ({ type: "FORGOT_ERRORS_SET", payload: { scope, errors } });
+export const clearForgotError = (scope, field) => ({ type: "FORGOT_ERROR_CLEAR", payload: { scope, field } });
+export const setForgotOtpError = (message) => ({ type: "FORGOT_OTP_ERROR_SET", payload: message });
+export const clearForgotOtpError = () => ({ type: "FORGOT_OTP_ERROR_CLEAR" });
+export const clearForgotPassword = () => ({ type: "FORGOT_CLEAR" });
+
 
 export const authUser = (sendData, toast, navigate, setLoader, onLocked) => async (dispatch) => {
 
@@ -297,5 +307,78 @@ export const openNotification = (noti, toast) => async (dispatch) => {
     } catch (error) {
         dispatch({ type: "NOTI_MARK_UNREAD", payload: noti.notiId });
         toast?.error(apiMessage(error, "Không thể đánh dấu đã đọc"));
+    }
+};
+
+export const requestForgotOtp = (account, toast) => async (dispatch) => {
+    dispatch({ type: "FORGOT_INFO_REQUEST" });
+    try {
+        const { data } = await api.post(`${BASE}/request`, account);
+        dispatch({ type: "FORGOT_INFO_SUCCESS", payload: { account, meta: toOtpMeta(data) } });
+        toast.success(data.message);
+        return true;
+    } catch (error) {
+        const err = parseForgotError(error);
+        const isFieldError = err.field === "username" || err.field === "email";   // 4.1 / 4.2
+        dispatch({ type: "FORGOT_INFO_FAILURE", payload: { errors: isFieldError ? { [err.field]: err.message } : {} } });
+        if (!isFieldError) toast.error(err.message);
+        return false;
+    }
+};
+
+export const verifyForgotOtp = (account, otp, toast) => async (dispatch) => {
+    dispatch({ type: "FORGOT_OTP_VERIFY_REQUEST" });
+    try {
+        const { data } = await api.post(`${BASE}/verify-otp`, { ...account, otp });
+        dispatch({ type: "FORGOT_OTP_VERIFY_SUCCESS", payload: { resetToken: data.resetToken } });
+        return { ok: true };
+    } catch (error) {
+        const err = parseForgotError(error);
+        if (err.requireResend) {                                              // 6.1 / 6.3
+            dispatch({ type: "FORGOT_OTP_VERIFY_FAILURE", payload: { message: err.message, blocked: true } });
+        } else if (err.field === "otp") {                                     // 6.2 và sai định dạng
+            dispatch({ type: "FORGOT_OTP_VERIFY_FAILURE", payload: { message: err.message, attemptsLeft: err.attemptsLeft } });
+        } else {
+            dispatch({ type: "FORGOT_OTP_VERIFY_FAILURE", payload: {} });
+            toast.error(err.message);
+        }
+        return { ok: false, code: err.code };
+    }
+};
+
+export const resendForgotOtp = (account, toast) => async (dispatch) => {
+    dispatch({ type: "FORGOT_OTP_RESEND_REQUEST" });
+    try {
+        const { data } = await api.post(`${BASE}/resend`, account);
+        dispatch({ type: "FORGOT_OTP_RESEND_SUCCESS", payload: toOtpMeta(data) });
+        toast.success("Đã gửi mã OTP mới đến email của bạn");
+        return true;
+    } catch (error) {
+        const err = parseForgotError(error);
+        const resendAt = err.code === "RESEND_TOO_SOON" ? Date.now() + err.retryAfterSeconds * 1000 : undefined;
+        dispatch({ type: "FORGOT_OTP_RESEND_FAILURE", payload: { resendAt } });
+        toast.error(err.message);
+        return false;
+    }
+};
+
+export const resetForgotPassword = (payload, toast, navigate) => async (dispatch) => {
+    dispatch({ type: "FORGOT_RESET_REQUEST" });
+    try {
+        await api.post(`${BASE}/reset`, payload);
+        dispatch(clearForgotPassword());
+        toast.success("Đổi mật khẩu thành công, vui lòng đăng nhập lại");
+        navigate("/login", { replace: true });
+    } catch (error) {
+        const err = parseForgotError(error);
+        if (err.code === "RESET_SESSION_EXPIRED") {
+            dispatch({ type: "FORGOT_SESSION_EXPIRED" });
+            toast.error(err.message);
+        } else if (err.field === "newPassword" || err.field === "confirmPassword") {   // 8.2 / 8.3
+            dispatch({ type: "FORGOT_RESET_FAILURE", payload: { errors: { [err.field]: err.message } } });
+        } else {
+            dispatch({ type: "FORGOT_RESET_FAILURE", payload: { errors: {} } });
+            toast.error(err.message);
+        }
     }
 };

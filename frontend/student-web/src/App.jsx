@@ -23,6 +23,7 @@ import NotificationPage from "./components/commom/notification/NotificationPage"
 import StudyCorner from "./components/student/study/StudyCorner";
 import DepartmentPage from "./components/student/study/DepartmentPage";
 import ResourceDetailPage from "./components/student/study/ResourceDetailPage";
+import ForgotPassword from "./components/auth/ForgotPassword.jsx";
 
 
 
@@ -92,7 +93,7 @@ function App() {
 
                     <Route element={<PrivateRoute publicPage />}>
                         <Route path="/login" element={<Login />} />
-                        <Route path="/forgot-password" element={<div>Quên mật khẩu</div>} />
+                        <Route path="/forgot-password" element={<ForgotPassword />} />
                         <Route path="/reset-password" element={<div>Đặt lại mật khẩu</div>} />
                         <Route path="/forum" element={<ForumPage />} />
                     </Route>
