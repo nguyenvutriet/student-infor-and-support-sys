@@ -1,9 +1,9 @@
 import api from "../../api/api";
-import { getUserRole, ROLE_HOME } from "../../utils/roles";
-import { clearUser, saveUser } from "../../utils/authStorage";
+import { getHomePath, getUserRole, ROLE_HOME } from "../../utils/roles";
 import { FORUM_FEATURES, normalizeComment, normalizePost, normalizePostPage } from "../../components/commom/forum/forumUtils";
 import {  normalizeNotificationPage } from "../../components/commom/notification/notificationUtils";
 import { parseForgotError, toOtpMeta } from "../../utils/forgotPasswordUtils";
+import { PASSWORD_MESSAGES, validateChangePassword } from "../../utils/passwordRules";
 
 
 const FORUM_PAGE_SIZE = 10;
@@ -22,6 +22,12 @@ export const setForgotOtpError = (message) => ({ type: "FORGOT_OTP_ERROR_SET", p
 export const clearForgotOtpError = () => ({ type: "FORGOT_OTP_ERROR_CLEAR" });
 export const clearForgotPassword = () => ({ type: "FORGOT_CLEAR" });
 
+const FIELDS = ["currentPassword", "newPassword", "confirmPassword"];
+
+export const openChangePassword = () => ({ type: "CHANGE_PASSWORD_OPEN" });
+export const closeChangePassword = () => ({ type: "CHANGE_PASSWORD_CLOSE" });
+export const clearChangePasswordError = (field) => ({ type: "CHANGE_PASSWORD_CLEAR_ERROR", payload: field });
+
 
 export const authUser = (sendData, toast, navigate, setLoader, onLocked) => async (dispatch) => {
 
@@ -35,9 +41,6 @@ export const authUser = (sendData, toast, navigate, setLoader, onLocked) => asyn
             toast.error("Tài khoản chưa được phân quyền hợp lệ, vui lòng liên hệ quản trị viên");
             return;
         }
-
-
-        saveUser(user);
 
         dispatch({
             type: "LOGIN_USER",
@@ -78,11 +81,26 @@ export const logoutUser = (navigate) => async (dispatch) => {
     } catch (error) {
         console.error("Logout error:", error);
     }
-    clearUser();
     dispatch({
         type: "LOGOUT_USER"
     });
     navigate("/login", { replace: true });
+}
+
+export const restoreSession = () => async (dispatch) => {
+    if (window.location.pathname.startsWith("/oauth2/redirect")) {
+        dispatch({ type: "AUTH_CHECK_DONE" });
+        return;
+    }
+    try {
+        const { data } = await api.get("/auth/user", { skipAuthRedirect: true });
+        const user = { ...data };
+        delete user.jwtToken;
+        if (!getUserRole(user)) throw new Error("No valid role");
+        dispatch({ type: "LOGIN_USER", payload: user });
+    } catch {
+        dispatch({ type: "AUTH_CHECK_DONE" });
+    }
 }
 
 export const loadOAuthUser = (toast, navigate) => async (dispatch) => {
@@ -93,13 +111,11 @@ export const loadOAuthUser = (toast, navigate) => async (dispatch) => {
 
         const role = getUserRole(user);
         if (!role) {
-            clearUser();
             toast.error("Tài khoản chưa được phân quyền hợp lệ, vui lòng liên hệ quản trị viên");
             navigate("/login", { replace: true });
             return;
         }
 
-        saveUser(user);
         dispatch({
             type: "LOGIN_USER",
             payload: user
@@ -107,7 +123,6 @@ export const loadOAuthUser = (toast, navigate) => async (dispatch) => {
         navigate(ROLE_HOME[role], { replace: true });
     } catch (error) {
         console.error("OAuth2 login error:", error);
-        clearUser();
         toast.error("Không thể hoàn tất đăng nhập bằng Google, vui lòng thử lại");
         navigate("/login", { replace: true });
     }
@@ -380,5 +395,48 @@ export const resetForgotPassword = (payload, toast, navigate) => async (dispatch
             dispatch({ type: "FORGOT_RESET_FAILURE", payload: { errors: {} } });
             toast.error(err.message);
         }
+    }
+};
+
+export const changePassword = (form, toast, navigate) => async (dispatch, getState) => {
+    const errors = validateChangePassword(form);
+    if (Object.keys(errors).length) {
+        dispatch({ type: "CHANGE_PASSWORD_SET_ERRORS", payload: errors });
+        return { ok: false };
+    }
+
+    dispatch({ type: "CHANGE_PASSWORD_REQUEST" });
+    try {
+        await api.post("/account/change-password", form, { skipAuthRedirect: true });
+
+        const { user } = getState().auth;
+        dispatch({ type: "CHANGE_PASSWORD_SUCCESS" });
+        toast.success(PASSWORD_MESSAGES.SUCCESS);
+
+        navigate(getHomePath(user) || "/", { replace: true });
+        return { ok: true };
+    } catch (error) {
+        const status = error.response?.status;
+        const data = error.response?.data;
+
+        if (status === 401 && !FIELDS.includes(data?.field)) {
+            dispatch({ type: "LOGOUT_USER", payload: { reason: "expired" } });
+            toast.error("Phiên đăng nhập đã hết hạn, vui lòng đăng nhập lại", { id: "session-expired" });
+            return { ok: false };
+        }
+
+        const fieldErrors = {};
+        let formError = "";
+        if (FIELDS.includes(data?.field)) {
+            fieldErrors[data.field] = data.message;
+        } else if (data?.code === "CURRENT_PASSWORD_INCORRECT") {
+            fieldErrors.currentPassword = data.message || PASSWORD_MESSAGES.CURRENT_WRONG;
+        } else if (!error.response) {
+            formError = PASSWORD_MESSAGES.NETWORK;
+        } else {
+            formError = data?.message || PASSWORD_MESSAGES.GENERIC;
+        }
+        dispatch({ type: "CHANGE_PASSWORD_FAILURE", payload: { fieldErrors, formError } });
+        return { ok: false };
     }
 };

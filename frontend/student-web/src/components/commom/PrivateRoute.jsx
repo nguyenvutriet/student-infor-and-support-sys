@@ -2,11 +2,14 @@ import { useSelector } from "react-redux";
 import { useLocation } from "react-router-dom";
 import { Navigate, Outlet } from "react-router-dom";
 import { getHomePath, getUserRole } from "../../utils/roles";
+import AuthSplash from "./AuthSplash";
 
 
 export const PrivateRoute = ({ publicPage = false, allowedRoles }) => {
-    const { user } = useSelector((state) => state.auth);
+    const { user, isChecking } = useSelector((state) => state.auth);
     const location = useLocation();
+
+    if (isChecking) return <AuthSplash />;
 
     const role = getUserRole(user);
     const homePath = getHomePath(user);

@@ -18,6 +18,10 @@ export const authReducer = (state = initialState, action) => {
                 user: null,
                 isAuthenticated: false
             }
+
+        case "AUTH_CHECK_DONE":
+            return { ...state, isChecking: false }
+
         default:
             return state;
     }

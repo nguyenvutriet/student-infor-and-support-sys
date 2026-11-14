@@ -1,5 +1,6 @@
 
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import Topbar from '../commom/Topbar'
 import Sidebar from '../commom/Sidebar'
 import '../../styles/layout.css'
@@ -16,6 +17,7 @@ export default function AdminLayout({
     onProfile,
     onLogout,
 }) {
+    const navigate = useNavigate()
     const [collapsed, setCollapsed] = useState(false)
 
     const toggleMenu = () => {
@@ -24,7 +26,7 @@ export default function AdminLayout({
 
     const handleNavigate = (item) => {
         if (item.path) {
-            window.location.href = item.path
+            navigate(item.path)
         }
     }
 
@@ -46,7 +48,7 @@ export default function AdminLayout({
                 unreadNotifications={unreadNotifications}
                 unreadMessages={unreadMessages}
                 onLogoClick={() => {
-                    window.location.href = '/admin'
+                    navigate('/admin')
                 }}
                 onNotifications={onNotifications}
                 onMessages={onMessages}

@@ -3,7 +3,8 @@ import Icon from './Icon'
 import Logo from './Logo'
 import { MODULE_LABELS } from '../../config/menus'
 import { useDispatch } from 'react-redux'
-import { logoutUser } from '../../store/action/action'
+import { logoutUser, openChangePassword } from '../../store/action/action'
+import ChangePasswordModal from './ChangePasswordModal'
 
 function initials(name = '') {
   return name.trim().split(/\s+/).slice(-2).map((w) => w[0]).join('').toUpperCase() || 'U'
@@ -38,6 +39,7 @@ export default function Topbar({
   }
 
   return (
+    <>
     <header className="ute-topbar">
       <div className="ute-topbar__brand">
         <Logo onClick={onLogoClick} />
@@ -88,6 +90,7 @@ export default function Topbar({
                   className="ute-dropdown__item"
                   onClick={() => {
                     setOpen(false);
+                    dispatch(openChangePassword());
                     onChangePassword?.();
                   }}
               >
@@ -114,5 +117,7 @@ export default function Topbar({
       </div>
       </div>
     </header>
+    <ChangePasswordModal />
+    </>
   )
 }

@@ -1,20 +1,12 @@
 import { configureStore } from "@reduxjs/toolkit";
 import { authReducer } from "./reducer/authReducer";
-import { loadUser } from "../utils/authStorage";
 import { forumReducer } from "./reducer/forumReducer";
 import { notificationReducer } from "./reducer/notificationReducer";
 import { studyReducer } from "./reducer/studyReducer";
 import { scheduleReducer } from "./reducer/scheduleReducer";
 import { forgotPasswordReducer } from "./reducer/forgotPasswordReducer";
+import { changePasswordReducer } from "./reducer/changePasswordReducer";
 
-const savedUser = loadUser();
-
-const initialState = {
-    auth: {
-        user: savedUser,
-        isAuthenticated: !!savedUser
-    }
-};
 
 export const store = configureStore({
     reducer: {
@@ -23,9 +15,9 @@ export const store = configureStore({
         notification: notificationReducer,
         study: studyReducer,
         schedule: scheduleReducer,
-        forgotPassword: forgotPasswordReducer
+        forgotPassword: forgotPasswordReducer,
+        changePassword: changePasswordReducer
     },
-    preloadedState: initialState
 });
 
 export default store;

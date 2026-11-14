@@ -94,7 +94,6 @@ function App() {
                     <Route element={<PrivateRoute publicPage />}>
                         <Route path="/login" element={<Login />} />
                         <Route path="/forgot-password" element={<ForgotPassword />} />
-                        <Route path="/reset-password" element={<div>Đặt lại mật khẩu</div>} />
                         <Route path="/forum" element={<ForumPage />} />
                     </Route>
 
@@ -123,7 +122,6 @@ function App() {
 
                     <Route element={<PrivateRoute allowedRoles={[ROLES.STUDENT]} />}>
                         <Route element={<AppLayout />}>
-                        <Route path="/student" element={<div>Giao diện STUDENT Ở ĐÂY NÈ MẤY NÍ ƠI</div>} />
                         <Route path="/student/requests" element={<ChatPage key="requests" />} />
                         <Route path="/student/messages" element={<ChatPage key="messages" />} />
                         <Route path="/student/forum" element={<ForumPage />} />

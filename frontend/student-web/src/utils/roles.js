@@ -6,8 +6,8 @@ export const ROLES = {
 
 export const ROLE_HOME = {
     [ROLES.ADMIN]: "/admin",
-    [ROLES.STAFF]: "/staff/forum",
-    [ROLES.STUDENT]: "/student",
+    [ROLES.STAFF]: "/staff/notifications",
+    [ROLES.STUDENT]: "/student/notifications",
 };
 
 const ROLE_PRIORITY = [ROLES.ADMIN, ROLES.STAFF, ROLES.STUDENT];

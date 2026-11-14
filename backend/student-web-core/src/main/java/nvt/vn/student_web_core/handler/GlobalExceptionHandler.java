@@ -4,6 +4,7 @@ import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -58,6 +59,34 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(InvalidDataAccessApiUsageException.class)
     public ResponseEntity<Map<String,String>> invalidDataAccess(InvalidDataAccessApiUsageException e) {
         return ResponseEntity.status(400).body(Map.of("message", e.getMessage()));
+    }
+
+    @ExceptionHandler(ForgotPasswordException.class)
+    public ResponseEntity<Map<String, Object>> handleForgotPassword(ForgotPasswordException ex) {
+        Map<String, Object> body = new LinkedHashMap<>();
+        body.put("status", ex.getStatus().value());
+        body.put("code", ex.getCode());
+        body.put("field", ex.getField());
+        body.put("message", ex.getMessage());
+        if (ex.getRetryAfterSeconds() != null) body.put("retryAfterSeconds", ex.getRetryAfterSeconds());
+        if (ex.isRequireResend()) body.put("requireResend", true);
+        if (ex.getAttemptsLeft() != null) body.put("attemptsLeft", ex.getAttemptsLeft());
+
+        ResponseEntity.BodyBuilder res = ResponseEntity.status(ex.getStatus());
+        if (ex.getRetryAfterSeconds() != null) {
+            res.header(HttpHeaders.RETRY_AFTER, String.valueOf(ex.getRetryAfterSeconds()));
+        }
+        return res.body(body);
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<Map<String, String>> unreadable(HttpMessageNotReadableException e) {
+        return ResponseEntity.badRequest().body(Map.of("message", "Dữ liệu gửi lên không hợp lệ"));
+    }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<Map<String, String>> fallback(Exception e) {
+        return ResponseEntity.status(500).body(Map.of("message", "Lỗi hệ thống, vui lòng thử lại sau"));
     }
 
 }
