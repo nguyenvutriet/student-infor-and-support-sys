@@ -7,8 +7,10 @@ import nvt.vn.student_web_core.security.request.LoginRequest;
 import nvt.vn.student_web_core.security.response.MessageResponse;
 import nvt.vn.student_web_core.service.AuthService;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
@@ -30,6 +32,11 @@ public class AuthController {
 
     @GetMapping("/user")
     public ResponseEntity<?> currentUser(Authentication authentication){
+
+        if(authentication == null || authentication instanceof AnonymousAuthenticationToken || !authentication.isAuthenticated()){
+            return new ResponseEntity<>(new MessageResponse("Chưa đăng nhập hoặc phiên đã hết hạn"), HttpStatus.UNAUTHORIZED);
+        }
+
         return ResponseEntity.ok(authService.getCurrentUser(authentication));
     }
 

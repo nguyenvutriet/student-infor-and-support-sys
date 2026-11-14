@@ -47,9 +47,10 @@ public class JwtUtils {
         String jwt = generateTokenFromUsername(userDetails.getUsername());
         ResponseCookie cookie = ResponseCookie.from(jwtCookie, jwt)
                 .path("/api")
-                .maxAge(24*60*60)
+                .maxAge(jwtExpirationMs / 1000)
                 .httpOnly(true)
                 .secure(false)
+                .sameSite("Lax")
                 .build();
         return cookie;
     }
