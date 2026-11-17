@@ -23,6 +23,7 @@ import NotificationPage from "./components/commom/notification/NotificationPage"
 import StudyCorner from "./components/student/study/StudyCorner";
 import DepartmentPage from "./components/student/study/DepartmentPage";
 import ResourceDetailPage from "./components/student/study/ResourceDetailPage";
+import StudentDocuments from "./components/student/documents/StudentDocuments";
 import ForgotPassword from "./components/auth/ForgotPassword.jsx";
 
 
@@ -130,6 +131,8 @@ function App() {
                         <Route path="/student/study/departments/:departmentId" element={<DepartmentPage />} />
                         <Route path="/student/study/resources/:resourceId" element={<ResourceDetailPage />} />
                         <Route path="/student/schedule" element={<StudyCorner initialTab="schedule" />} />
+                        <Route path="/student/documents" element={<StudentDocuments view="list" />} />
+                        <Route path="/student/documents/:docId" element={<StudentDocuments view="detail" />} />
                         </Route>
                     </Route>
 
