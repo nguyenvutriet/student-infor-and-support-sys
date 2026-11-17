@@ -6,7 +6,6 @@ import Icon from '../../commom/Icon'
 import ValidityBadge from '../../staff/documents/ValidityBadge'
 import { fmtDate, getVisibleDocument, RELATION_DISPLAY_LABEL } from '../../../api/studentDocumentApi'
 
-/** Sinh viên xem chi tiết văn bản: thông tin, nội dung, tập tin đính kèm (xem trước / tải xuống), văn bản liên quan. */
 export default function StudentDocumentDetail() {
   const { docId } = useParams()
   const navigate = useNavigate()

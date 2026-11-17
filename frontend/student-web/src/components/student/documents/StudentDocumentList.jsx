@@ -8,7 +8,6 @@ import {
 
 const PAGE_SIZE = 10
 
-/** Sinh viên xem danh sách văn bản đang hiển thị: tìm theo số hiệu / tiêu đề, lọc theo đơn vị và hiệu lực. */
 export default function StudentDocumentList() {
   const navigate = useNavigate()
   const [departments, setDepartments] = useState([])

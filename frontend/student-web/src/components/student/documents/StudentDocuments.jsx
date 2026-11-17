@@ -4,7 +4,6 @@ import StudentDocumentDetail from './StudentDocumentDetail'
 import '../../../styles/documents.css'
 import '../../../styles/student-documents.css'
 
-/** Trang "Văn bản" của sinh viên: view = 'list' (/student/documents) hoặc 'detail' (/student/documents/:docId). */
 export default function StudentDocuments({ view = 'list' }) {
   return (
     <>
