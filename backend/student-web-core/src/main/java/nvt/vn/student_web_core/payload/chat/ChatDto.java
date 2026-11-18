@@ -28,7 +28,7 @@ public final class ChatDto {
                                 String rejectReason, String closeNote,
                                 List<DepartmentOption> invitedDepartments,
                                 List<HistoryItem> histories,
-                                String access, Permissions permissions) {}
+                                String access, Permissions permissions, int recallWindowMinutes) {}
 
     public record AttachmentDto(String fileId, String fileName, String fileUrl, String fileType, int fileSize) {}
 

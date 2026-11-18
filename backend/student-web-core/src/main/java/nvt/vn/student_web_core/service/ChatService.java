@@ -7,20 +7,15 @@ import nvt.vn.student_web_core.payload.chat.ChatDto.*;
 import nvt.vn.student_web_core.repository.*;
 import nvt.vn.student_web_core.util.AuthUtil;
 import nvt.vn.student_web_core.websocket.ChatEventPublisher;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.*;
 
-/**
- * Nghiệp vụ nhắn tin / yêu cầu hỗ trợ (UC 21–31).
- * Mọi thay đổi đều kiểm tra quyền + trạng thái ngay trong transaction (có khóa dòng),
- * sau khi commit mới đẩy sự kiện realtime qua WebSocket.
- *
- * Quy ước: mỗi đơn vị chỉ có 1 nhân viên → nhân viên của đơn vị tiếp nhận (toDepartment) chính là người phụ trách.
- */
 @Service
 @RequiredArgsConstructor
 public class ChatService {
@@ -45,6 +40,10 @@ public class ChatService {
     private final CloudinaryService cloudinaryService;
     private final ChatEventPublisher publisher;
     private final AuthUtil authUtil;
+
+    /** Chỉ được thu hồi tin nhắn trong vòng N phút kể từ lúc gửi (đổi bằng chat.recall-window-minutes trong application.properties). */
+    @Value("${chat.recall-window-minutes:10}")
+    private int recallWindowMinutes;
 
     /** OWNER: sinh viên tạo; DEPT: nhân viên đơn vị tiếp nhận; INVITED: đơn vị được mời đã tiếp nhận; INVITED_PENDING: được mời nhưng chưa tiếp nhận. */
     private enum Access { OWNER, DEPT, INVITED, INVITED_PENDING }
@@ -231,7 +230,7 @@ public class ChatService {
                 r.getStudent().getUserId(), r.getStudent().getFullName(),
                 d == null ? null : d.getDepartmentId(), d == null ? null : d.getName(),
                 h == null ? null : h.getUserId(), h == null ? null : h.getFullName(),
-                null, null, invited, hist, acc.name(), permissions(acc, r));
+                null, null, invited, hist, acc.name(), permissions(acc, r), recallWindowMinutes);
     }
 
     private MessageDto toMessage(Message m, Integer requestId) {
@@ -246,7 +245,6 @@ public class ChatService {
                 rec ? null : m.getContent(), m.getSendAt(), rec, files);
     }
 
-    // ------------------------------------------------------------------ UC21 truy cập / danh sách
 
     @Transactional(readOnly = true)
     public List<DepartmentOption> departments() {
@@ -284,8 +282,6 @@ public class ChatService {
                 .sorted(Comparator.comparing(RequestSummary::updatedAt, Comparator.nullsLast(Comparator.reverseOrder())))
                 .toList();
     }
-
-    // ------------------------------------------------------------------ UC22 tạo yêu cầu
 
     @Transactional
     public RequestDetail create(CreateRequestBody b) {
@@ -327,8 +323,6 @@ public class ChatService {
         return toDetail(r, Access.OWNER);
     }
 
-    // ------------------------------------------------------------------ UC23 xóa yêu cầu
-
     @Transactional
     public void delete(Integer id) {
         Actor a = actor();
@@ -341,8 +335,6 @@ public class ChatService {
         r.setDeleted(true);
         emit("REQUEST_DELETED", r, null, to);
     }
-
-    // ------------------------------------------------------------------ UC24 xem tin nhắn
 
     @Transactional(readOnly = true)
     public RequestDetail detail(Integer id) {
@@ -357,8 +349,6 @@ public class ChatService {
         return messageRepo.findThread(r.getConversation().getConId()).stream()
                 .map(m -> toMessage(m, r.getRequestId())).toList();
     }
-
-    // ------------------------------------------------------------------ UC25 nhắn tin
 
     @Transactional
     public MessageDto send(Integer id, String content, List<MultipartFile> files) {
@@ -414,8 +404,6 @@ public class ChatService {
         return dto;
     }
 
-    // ------------------------------------------------------------------ UC26 thu hồi
-
     @Transactional
     public void recall(Integer id, Integer messId) {
         Actor a = actor();
@@ -427,6 +415,8 @@ public class ChatService {
                 || m.getType() == MessageType.SYSTEM || m.isRecalled()
                 || r.getStatus() != RequestStatus.ACCEPTED)
             throw ChatException.conflict("Thu hồi tin nhắn không thành công");
+        if (m.getSendAt() != null && Duration.between(m.getSendAt(), LocalDateTime.now()).toMinutes() >= recallWindowMinutes)
+            throw ChatException.conflict("Đã quá " + recallWindowMinutes + " phút kể từ lúc gửi nên không thể thu hồi tin nhắn");
 
         m.setRecalled(true);
         m.setContent(null);
@@ -441,8 +431,6 @@ public class ChatService {
     private void safeDelete(String publicId, String resourceType) {
         try { cloudinaryService.delete(publicId, resourceType); } catch (RuntimeException ignored) { }
     }
-
-    // ------------------------------------------------------------------ UC27 tiếp nhận
 
     @Transactional
     public RequestDetail accept(Integer id) {
@@ -478,8 +466,6 @@ public class ChatService {
         emit("REQUEST_CHANGED", r, null, recipients(r));
         return toDetail(r, Access.DEPT);
     }
-
-    // ------------------------------------------------------------------ UC28 từ chối
 
     /**
      * - Đơn vị được mời từ chối lời mời → lời mời bị gỡ.
@@ -546,8 +532,6 @@ public class ChatService {
                 .findFirst().orElse(null);
     }
 
-    // ------------------------------------------------------------------ UC29 chuyển tiếp
-
     @Transactional
     public RequestDetail forward(Integer id, ForwardBody b) {
         Actor a = actor();
@@ -593,8 +577,6 @@ public class ChatService {
         return toDetail(r, Access.DEPT);
     }
 
-    // ------------------------------------------------------------------ UC30 mời đơn vị hỗ trợ
-
     @Transactional
     public RequestDetail invite(Integer id, InviteBody b) {
         Actor a = actor();
@@ -637,8 +619,6 @@ public class ChatService {
         emit("REQUEST_CHANGED", r, null, to);
         return toDetail(r, Access.DEPT);
     }
-
-    // ------------------------------------------------------------------ UC31 đóng trao đổi
 
     @Transactional
     public RequestDetail close(Integer id, String note) {

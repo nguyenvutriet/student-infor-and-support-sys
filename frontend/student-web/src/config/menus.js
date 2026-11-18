@@ -1,10 +1,3 @@
-/**
- * Menu trái theo từng module.
- * - key: mã định danh (dùng cho activeKey)
- * - path: đường dẫn nếu dùng react-router
- * - badge: số hiển thị bên phải (tùy chọn)
- * Nhóm có `group` sẽ hiện tiêu đề nhỏ phía trên.
- */
 export const MODULE_LABELS = {
   student: 'Sinh viên',
   staff: 'Nhân viên',

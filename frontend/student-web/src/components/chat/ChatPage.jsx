@@ -120,42 +120,42 @@ export default function ChatPage({ initialTab = 'MESSAGES' }) {
 
   // ---------------------------------------------------------------- WebSocket
   useChatSocket(
-    useCallback((ev) => {
-      const { type, requestId, payload } = ev
-      const { selectedId: sel, myId: me, isStaff: staff } = latest.current
-      switch (type) {
-        case 'MESSAGE_CREATED':
-          if (requestId === sel) {
-            setMessages((prev) => (prev.some((m) => m.messId === payload.messId) ? prev : [...prev, payload]))
-          } else if (payload.senderId !== me && payload.type !== 'SYSTEM') {
-            setUnread((prev) => new Set(prev).add(requestId))
-          }
-          scheduleList()
-          break
-        case 'MESSAGE_RECALLED':
-          if (requestId === sel) {
-            setMessages((prev) => prev.map((m) => (m.messId === payload.messId
-              ? { ...m, recalled: true, content: null, attachments: [] } : m)))
-          }
-          break
-        case 'REQUEST_DELETED':
-          if (requestId === sel) { clearSelection(); toast('Yêu cầu đã bị sinh viên xóa') }
-          scheduleList()
-          break
-        case 'REQUEST_CREATED':
-          if (staff) toast('Có yêu cầu hỗ trợ mới', { icon: '📩' })
-          scheduleList()
-          break
-        default: // REQUEST_CHANGED
-          scheduleList()
-          if (requestId === sel) latest.current.refreshDetail(requestId)
-      }
-    }, [scheduleList, clearSelection]),
-    useCallback((reconnected) => {
-      if (!reconnected) return
-      latest.current.fetchList?.()   // bù dữ liệu bị lỡ khi mất kết nối
-      if (latest.current.selectedId) latest.current.loadConversation(latest.current.selectedId)
-    }, []),
+      useCallback((ev) => {
+        const { type, requestId, payload } = ev
+        const { selectedId: sel, myId: me, isStaff: staff } = latest.current
+        switch (type) {
+          case 'MESSAGE_CREATED':
+            if (requestId === sel) {
+              setMessages((prev) => (prev.some((m) => m.messId === payload.messId) ? prev : [...prev, payload]))
+            } else if (payload.senderId !== me && payload.type !== 'SYSTEM') {
+              setUnread((prev) => new Set(prev).add(requestId))
+            }
+            scheduleList()
+            break
+          case 'MESSAGE_RECALLED':
+            if (requestId === sel) {
+              setMessages((prev) => prev.map((m) => (m.messId === payload.messId
+                  ? { ...m, recalled: true, content: null, attachments: [] } : m)))
+            }
+            break
+          case 'REQUEST_DELETED':
+            if (requestId === sel) { clearSelection(); toast('Yêu cầu đã bị sinh viên xóa') }
+            scheduleList()
+            break
+          case 'REQUEST_CREATED':
+            if (staff) toast('Có yêu cầu hỗ trợ mới', { icon: '📩' })
+            scheduleList()
+            break
+          default: // REQUEST_CHANGED
+            scheduleList()
+            if (requestId === sel) latest.current.refreshDetail(requestId)
+        }
+      }, [scheduleList, clearSelection]),
+      useCallback((reconnected) => {
+        if (!reconnected) return
+        latest.current.fetchList?.()   // bù dữ liệu bị lỡ khi mất kết nối
+        if (latest.current.selectedId) latest.current.loadConversation(latest.current.selectedId)
+      }, []),
   )
 
   // ---------------------------------------------------------------- hành động
@@ -250,57 +250,57 @@ export default function ChatPage({ initialTab = 'MESSAGES' }) {
   }
 
   return (
-    <div className={`cx-shell ${selectedId ? 'has-selection' : ''} ${isStaff ? 'is-staff' : ''}`}>
-      <RequestList
-        isStaff={isStaff} tab={tab} onTab={changeTab} q={q} onQ={setQ} status={status} onStatus={setStatus} onReset={reset}
-        items={requests} loading={loadingList} error={listError} selectedId={selectedId} unread={unread}
-        onSelect={select}
-        onCreate={() => openWithDepartments({ type: 'create' })}
-        onAccept={(id) => setDialog({ type: 'accept', id })}
-        onDelete={(id) => setDialog({ type: 'delete', id })}
-      />
+      <div className={`cx-shell ${selectedId ? 'has-selection' : ''} ${isStaff ? 'is-staff' : ''}`}>
+        <RequestList
+            isStaff={isStaff} tab={tab} onTab={changeTab} q={q} onQ={setQ} status={status} onStatus={setStatus} onReset={reset}
+            items={requests} loading={loadingList} error={listError} selectedId={selectedId} unread={unread}
+            onSelect={select}
+            onCreate={() => openWithDepartments({ type: 'create' })}
+            onAccept={(id) => setDialog({ type: 'accept', id })}
+            onDelete={(id) => setDialog({ type: 'delete', id })}
+        />
 
-      <ChatWindow
-        detail={detail} messages={messages} myId={myId} isStaff={isStaff}
-        loading={loadingChat} error={chatError}
-        onSend={onSend}
-        onRecall={(msg) => setDialog({ type: 'recall', msg })}
-        onBack={clearSelection}
-        onToggleInfo={() => setShowInfo((v) => !v)}
-      />
+        <ChatWindow
+            detail={detail} messages={messages} myId={myId} isStaff={isStaff}
+            loading={loadingChat} error={chatError}
+            onSend={onSend}
+            onRecall={(msg) => setDialog({ type: 'recall', msg })}
+            onBack={clearSelection}
+            onToggleInfo={() => setShowInfo((v) => !v)}
+        />
 
-      <InfoPanel detail={detail} isStaff={isStaff} open={showInfo} onClose={() => setShowInfo(false)} actions={infoActions} />
+        <InfoPanel detail={detail} isStaff={isStaff} open={showInfo} onClose={() => setShowInfo(false)} actions={infoActions} />
 
-      {dialog?.type === 'accept' && (
-        <ConfirmDialog title="Tiếp nhận yêu cầu" message="Bạn xác nhận tiếp nhận và phụ trách yêu cầu hỗ trợ này?"
-          onConfirm={() => doAccept(dialog.id)} onClose={() => setDialog(null)} />
-      )}
-      {dialog?.type === 'reject' && (
-        <RejectDialog onSubmit={(reason) => doReject(dialog.id, reason)} onClose={() => setDialog(null)} />
-      )}
-      {dialog?.type === 'forward' && (
-        <ForwardDialog departments={departments} currentId={detail?.departmentId}
-          onSubmit={(deptId, note) => doForward(dialog.id, deptId, note)} onClose={() => setDialog(null)} />
-      )}
-      {dialog?.type === 'invite' && (
-        <InviteDialog departments={departments} currentId={detail?.departmentId}
-          invitedIds={(detail?.invitedDepartments || []).map((d) => d.id)}
-          onSubmit={(ids, msg) => doInvite(dialog.id, ids, msg)} onClose={() => setDialog(null)} />
-      )}
-      {dialog?.type === 'close' && (
-        <CloseDialog onSubmit={(note) => doClose(dialog.id, note)} onClose={() => setDialog(null)} />
-      )}
-      {dialog?.type === 'delete' && (
-        <ConfirmDialog title="Xóa yêu cầu" danger okText="Xóa" message="Bạn có chắc muốn xóa yêu cầu này? Hành động không thể hoàn tác."
-          onConfirm={() => doDelete(dialog.id)} onClose={() => setDialog(null)} />
-      )}
-      {dialog?.type === 'recall' && (
-        <ConfirmDialog title="Thu hồi tin nhắn" okText="Thu hồi" message="Tin nhắn sẽ bị thu hồi ở cả hai bên. Bạn có chắc không?"
-          onConfirm={() => doRecall(dialog.msg)} onClose={() => setDialog(null)} />
-      )}
-      {dialog?.type === 'create' && (
-        <CreateRequestDialog departments={departments} onSubmit={doCreate} onClose={() => setDialog(null)} />
-      )}
-    </div>
+        {dialog?.type === 'accept' && (
+            <ConfirmDialog title="Tiếp nhận yêu cầu" message="Bạn xác nhận tiếp nhận và phụ trách yêu cầu hỗ trợ này?"
+                           onConfirm={() => doAccept(dialog.id)} onClose={() => setDialog(null)} />
+        )}
+        {dialog?.type === 'reject' && (
+            <RejectDialog onSubmit={(reason) => doReject(dialog.id, reason)} onClose={() => setDialog(null)} />
+        )}
+        {dialog?.type === 'forward' && (
+            <ForwardDialog departments={departments} currentId={detail?.departmentId}
+                           onSubmit={(deptId, note) => doForward(dialog.id, deptId, note)} onClose={() => setDialog(null)} />
+        )}
+        {dialog?.type === 'invite' && (
+            <InviteDialog departments={departments} currentId={detail?.departmentId}
+                          invitedIds={(detail?.invitedDepartments || []).map((d) => d.id)}
+                          onSubmit={(ids, msg) => doInvite(dialog.id, ids, msg)} onClose={() => setDialog(null)} />
+        )}
+        {dialog?.type === 'close' && (
+            <CloseDialog onSubmit={(note) => doClose(dialog.id, note)} onClose={() => setDialog(null)} />
+        )}
+        {dialog?.type === 'delete' && (
+            <ConfirmDialog title="Xóa yêu cầu" danger okText="Xóa" message="Bạn có chắc muốn xóa yêu cầu này? Hành động không thể hoàn tác."
+                           onConfirm={() => doDelete(dialog.id)} onClose={() => setDialog(null)} />
+        )}
+        {dialog?.type === 'recall' && (
+            <ConfirmDialog title="Thu hồi tin nhắn" okText="Thu hồi" message={`Tin nhắn sẽ bị thu hồi ở cả hai bên (chỉ thực hiện được trong ${detail?.recallWindowMinutes ?? 10} phút sau khi gửi). Bạn có chắc không?`}
+                           onConfirm={() => doRecall(dialog.msg)} onClose={() => setDialog(null)} />
+        )}
+        {dialog?.type === 'create' && (
+            <CreateRequestDialog departments={departments} onSubmit={doCreate} onClose={() => setDialog(null)} />
+        )}
+      </div>
   )
 }
