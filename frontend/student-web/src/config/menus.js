@@ -14,10 +14,9 @@ export const MODULE_LABELS = {
 export const MENUS = {
   student: [
     { key: 'home', label: 'Trang chủ', icon: 'home', path: '/student' },
-    { key: 'forum', label: 'Diễn đàn', icon: 'forum', path: '/student/forum' },
-    { group: 'Hỗ trợ' },
     { key: 'notifications', label: 'Thông báo cá nhân', icon: 'bell', path: '/student/notifications' },
-    { key: 'requests', label: 'Yêu cầu hỗ trợ', icon: 'inbox', path: '/student/requests' },
+    { group: 'Hỗ trợ' },
+    { key: 'forum', label: 'Diễn đàn', icon: 'forum', path: '/student/forum' },
     { key: 'messages', label: 'Tin nhắn', icon: 'chat', path: '/student/messages' },
     { group: 'Học tập' },
     { key: 'study', label: 'Góc học tập', icon: 'book', path: '/student/study' },

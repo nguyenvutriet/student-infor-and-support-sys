@@ -22,8 +22,7 @@ public class SwaggerConfig {
                 .description("JWT Bearer Token");
 
         SecurityRequirement bearerRequirement = new SecurityRequirement()
-                .addList("Bearer Authentication")
-                ;
+                .addList("Bearer Authentication");
 
         return new OpenAPI()
                 .info(new Info().title("Spring Boot Project for Student Info and Support Sys")
